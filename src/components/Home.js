@@ -2,13 +2,30 @@ import React from 'react';
 
 const Home = () => {
   return (
-    <div className="bg-gray-50 dark:bg-dark transition-colors duration-300">
+    <div className="bg-gradient-to-b from-white via-blue-400 to-white dark:from-dark-400 dark:via-dark-500 dark:to-dark-600 transition-colors duration-600 relative overflow-hidden">
+      {/* Geometrik Şekiller */}
+      <div className="absolute inset-0 pointer-events-none">
+        <svg className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" width="800" height="800" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="400" cy="400" r="400" fill="url(#paint0_radial)" fillOpacity="0.3"/>
+          <defs>
+            <radialGradient id="paint0_radial" cx="0" cy="0" r="5" gradientUnits="userSpaceOnUse" gradientTransform="translate(400 400) rotate(90) scale(400)">
+              <stop stopColor="#3B82F6"/>
+              <stop offset="1" stopColor="#9333EA" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
       {/* Hero Section */}
-      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-              AIWise ile Kendi Yapay Zekanızı Oluşturun
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"> 
+                <span className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+                AIWise 
+              </span>
+                    ile Kendi Yapay Zekanızı Oluşturun!
+                          
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
               Kendi verilerinizi kullanarak özelleştirilmiş AI modelleri oluşturun. AIWise, kullanıcı dostu arayüzü ile yapay zeka projelerinizi hayata geçirmenizi sağlar.
@@ -26,8 +43,9 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      <div className="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-dark-100">
+      
         <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">Özellikler</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 rounded-xl bg-gray-50 dark:bg-dark-200 hover:shadow-lg transition-all duration-300">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4">
@@ -72,7 +90,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
+      
     </div>
   );
 };
