@@ -59,6 +59,9 @@ const Navbar = () => {
               )}
             </button>
             <a href="#" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
+              Register
+            </a>
+                      <a href="#" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
               Login
             </a>
           </div>

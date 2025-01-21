@@ -2,7 +2,7 @@ import React from 'react';
 
 const Home = () => {
   return (
-    <div className="bg-gradient-to-b from-blue-100 via-blue-200 to-white dark:from-dark-400 dark:via-dark-500 dark:to-dark-600 transition-colors duration-300 relative overflow-hidden">
+    <div className="bg-gradient-to-b from-blue-100 via-blue-200 to-white dark:from-dark-500 dark:via-dark-200 dark:to-dark-300 transition-colors duration-300 relative overflow-hidden">
       {/* Geometrik Şekiller */}
       <div className="absolute inset-0 pointer-events-none">
         <svg className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" width="800" height="800" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -20,12 +20,15 @@ const Home = () => {
       <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"> 
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"> 
                 <span className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-                AIWise 
-              </span>
+                    AIWise
+                </span>
+                <span className="ml-2">
                     ile Kendi Yapay Zekanızı Oluşturun!
+                </span>
             </h1>
+
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
               Kendi verilerinizi kullanarak özelleştirilmiş AI modelleri oluşturun. AIWise, kullanıcı dostu arayüzü ile yapay zeka projelerinizi hayata geçirmenizi sağlar.
             </p>
