@@ -2,7 +2,7 @@ import React from 'react';
 
 const Home = () => {
   return (
-    <div className="bg-gradient-to-b from-white via-blue-400 to-white dark:from-dark-400 dark:via-dark-500 dark:to-dark-600 transition-colors duration-600 relative overflow-hidden">
+    <div className="bg-gradient-to-b from-blue-100 via-blue-200 to-white dark:from-dark-400 dark:via-dark-500 dark:to-dark-600 transition-colors duration-300 relative overflow-hidden">
       {/* Geometrik Şekiller */}
       <div className="absolute inset-0 pointer-events-none">
         <svg className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2" width="800" height="800" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -25,7 +25,6 @@ const Home = () => {
                 AIWise 
               </span>
                     ile Kendi Yapay Zekanızı Oluşturun!
-                          
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
               Kendi verilerinizi kullanarak özelleştirilmiş AI modelleri oluşturun. AIWise, kullanıcı dostu arayüzü ile yapay zeka projelerinizi hayata geçirmenizi sağlar.
@@ -34,7 +33,7 @@ const Home = () => {
               <button className="px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
                 Ücretsiz Başla
               </button>
-              <button className="px-8 py-3 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-200 transition-colors duration-200">
+              <button className="px-8 py-3 rounded-lg border border-gray-600 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-200 transition-colors duration-200">
                 Daha Fazla Bilgi
               </button>
             </div>
@@ -43,7 +42,7 @@ const Home = () => {
       </div>
 
       {/* Features Section */}
-      
+      <div className="py-16 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">Özellikler</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -90,9 +89,9 @@ const Home = () => {
             </div>
           </div>
         </div>
-      
+      </div>
     </div>
   );
 };
 
-export default Home; 
+export default Home;
