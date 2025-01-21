@@ -8,12 +8,10 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-                Kendi yapay zekanızı oluşturmanın en kolay yolu.
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600"> Yeni Nesil </span>
-              Yaklaşım 
+              AIWise ile Kendi Yapay Zekanızı Oluşturun
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-                Kendi veriniz, kendi zekanız!
+              Kendi verilerinizi kullanarak özelleştirilmiş AI modelleri oluşturun. AIWise, kullanıcı dostu arayüzü ile yapay zeka projelerinizi hayata geçirmenizi sağlar.
             </p>
             <div className="flex justify-center gap-4">
               <button className="px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
@@ -38,10 +36,10 @@ const Home = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                İnteraktif Öğrenme
+                Kendi Verilerinizi Kullanın
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Pratik yaparak ve gerçek projeler üzerinde çalışarak öğrenin.
+                AIWise, kendi verilerinizi kullanarak özelleştirilmiş AI modelleri oluşturmanıza olanak tanır.
               </p>
             </div>
 
@@ -52,10 +50,10 @@ const Home = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Kapsamlı Müfredat
+                Kullanıcı Dostu Arayüz
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Temel konulardan ileri seviyeye kadar detaylı eğitim içerikleri.
+                Kullanıcı dostu arayüzümüz ile AI modellerinizi kolayca oluşturun ve yönetin.
               </p>
             </div>
 
@@ -69,7 +67,7 @@ const Home = () => {
                 Uzman Desteği
               </h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Deneyimli eğitmenlerden birebir destek alın.
+                Deneyimli eğitmenlerden birebir destek alarak projelerinizi geliştirin.
               </p>
             </div>
           </div>

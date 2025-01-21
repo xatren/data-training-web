@@ -1,70 +1,41 @@
-# Getting Started with Create React App
+# AIWise
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+AIWise, kullanıcıların kendi verileri ile özelleştirilmiş yapay zeka modelleri oluşturmasına olanak tanıyan bir platformdur. Kullanıcı dostu arayüzü sayesinde, herkesin yapay zeka projelerini kolayca hayata geçirmesini sağlar.
 
-## Available Scripts
+## Özellikler
 
-In the project directory, you can run:
+- **Kendi Verilerinizi Kullanın**: Kullanıcılar, kendi verilerini kullanarak AI modelleri oluşturabilir.
+- **Kullanıcı Dostu Arayüz**: Basit ve anlaşılır bir arayüz ile AI modellerinizi kolayca oluşturun ve yönetin.
+- **Uzman Desteği**: Deneyimli eğitmenlerden birebir destek alarak projelerinizi geliştirin.
+- **Dark Mode**: Göz yormayan bir deneyim için koyu tema desteği.
 
-### `npm start`
+## Kurulum
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Projenizi yerel ortamda çalıştırmak için aşağıdaki adımları izleyin:
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1. **Depoyu Klonlayın**:
+   ```bash
+   git clone https://github.com/xatren/data-training-web.git
+   cd data-training-web
+   ```
 
-### `npm test`
+2. **Gerekli Paketleri Yükleyin**:
+   ```bash
+   npm install
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. **Geliştirme Sunucusunu Başlatın**:
+   ```bash
+   npm start
+   ```
 
-### `npm run build`
+4. **Tarayıcınızda Açın**: [http://localhost:3000](http://localhost:3000)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Katkıda Bulunma
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Katkılarınızı bekliyoruz! Lütfen önerilerinizi ve hatalarınızı bildirin.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Lisans
 
-### `npm run eject`
+Bu proje MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için [LICENSE](LICENSE) dosyasına bakın.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

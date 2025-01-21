@@ -9,10 +9,10 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hakkımızda</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Şirketimiz</a>
+                <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">AIWise Nedir?</a>
               </li>
               <li>
-                <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Kariyer</a>
+                <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">Kariyer Fırsatları</a>
               </li>
               <li>
                 <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">İletişim</a>
@@ -70,7 +70,7 @@ const Footer = () => {
         </div>
         <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
           <p className="text-center text-gray-500 dark:text-gray-400">
-            © 2024 AI Academy. Tüm hakları saklıdır.
+            © 2024 AIWise. Tüm hakları saklıdır.
           </p>
         </div>
       </div>
