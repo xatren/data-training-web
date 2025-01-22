@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [darkMode, setDarkMode] = useState(() => {
@@ -19,14 +20,14 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed w-full bg-white/80 dark:bg-dark-100/80 backdrop-blur-sm shadow-lg z-50 transition-all duration-300">
+    <nav className="fixed w-full bg-white/80 dark:bg-dark-100 backdrop-blur-sm shadow-lg z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
-                AIWise
-              </span>
+              <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text">
+                Muneccim
+              </Link>
             </div>
             <div className="hidden md:ml-10 md:flex md:space-x-8">
               <a href="#" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors duration-200">
@@ -59,11 +60,11 @@ const Navbar = () => {
               )}
             </button>
             <a href="#" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
-              Register
+              Sign Up
             </a>
-                      <a href="#" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
+            <Link to="/login" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
               Login
-            </a>
+            </Link>
           </div>
         </div>
       </div>
