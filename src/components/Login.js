@@ -3,18 +3,21 @@ import { Link, useNavigate } from 'react-router-dom';
 import authService from '../services/authService';
 import translations from '../i18n/translations';
 
-const Login = ({ language }) => {
+const Login = ({ language, setUserEmail }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await authService.login(email, password);
+      const user = await authService.login(email, password);
+      setUserEmail(user.email);
       navigate('/train');
     } catch (error) {
+      setErrorMessage(translations[language].loginError);
       console.error('Login failed:', error);
     }
   };
@@ -32,6 +35,11 @@ const Login = ({ language }) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white dark:bg-dark-100 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {errorMessage && (
+            <div className="mb-4 text-red-600 text-center">
+              {errorMessage}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">

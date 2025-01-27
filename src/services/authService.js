@@ -38,8 +38,11 @@ const login = async (email, password) => {
   // Örneğin, API çağrısı yaparak kullanıcıyı doğrulama
 };
 
-export default {
-  ...authService,
-  login,
-  // Diğer fonksiyonlar...
+export const getCurrentUser = authService.getCurrentUser;
+export default authService;
+
+export const logout = () => {
+    // Kullanıcının oturumunu kapatmak için gerekli işlemler
+    localStorage.removeItem('currentUser'); // Kullanıcı bilgilerini temizle
+    // Diğer oturum kapatma işlemleri...
 }; 

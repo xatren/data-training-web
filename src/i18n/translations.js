@@ -11,7 +11,7 @@ const translations = {
     blog: "Blog",
     
     // Train Model
-    trainModel: "Train Your Model",
+    trainModel: "Train Model",
     chatHistory: "Chat History",
     chatHistory1: "Previous Chat 1",
     chatHistory2: "Previous Chat 2",
@@ -193,6 +193,8 @@ const translations = {
         ]
       }
     ],
+    logout: "Logout",
+    accountSettings: "Account Settings",
   },
   tr: {
     // Navbar
@@ -206,7 +208,7 @@ const translations = {
     blog: "Blog",
     
     // Train Model
-    trainModel: "Modelinizi Eğitin",
+    trainModel: "Modeli Eğit",
     chatHistory: "Sohbet Geçmişi",
     chatHistory1: "Önceki Sohbet 1",
     chatHistory2: "Önceki Sohbet 2",
@@ -388,6 +390,8 @@ const translations = {
         ]
       }
     ],
+    logout: "Oturumu Sonlandır",
+    accountSettings: "Hesap Ayarları",
   }
 };
 

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import translations from '../i18n/translations';
+import { logout } from '../services/authService';
 
-const Navbar = ({ language, setLanguage }) => {
+const Navbar = ({ language, setLanguage, userEmail, setUserEmail }) => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
   });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (darkMode) {
@@ -18,6 +21,12 @@ const Navbar = ({ language, setLanguage }) => {
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setUserEmail(null);
+    navigate('/login');
   };
 
   return (
@@ -66,12 +75,46 @@ const Navbar = ({ language, setLanguage }) => {
             >
               {language === 'en' ? 'TR' : 'EN'}
             </button>
-            <Link to="/signup" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
-              {translations[language].signUp}
-            </Link>
-            <Link to="/login" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
-              {translations[language].login}
-            </Link>
+            {userEmail ? (
+              <div className="relative">
+                <button 
+                  onClick={() => setDropdownOpen(!dropdownOpen)} 
+                  className="flex items-center px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-200 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors duration-200"
+                >
+                  {userEmail}
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-200 rounded-md shadow-lg z-10">
+                    <Link 
+                      to="/train" 
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-dark-300"
+                    >
+                      {translations[language].trainModel}
+                    </Link>
+                    <button 
+                      onClick={handleLogout} 
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-dark-300"
+                    >
+                      {translations[language].logout}
+                    </button>
+                    <button 
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-dark-300"
+                    >
+                      {translations[language].accountSettings}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex space-x-4">
+                <Link to="/signup" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
+                  {translations[language].signUp}
+                </Link>
+                <Link to="/login" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
+                  {translations[language].login}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
