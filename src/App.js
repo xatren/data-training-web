@@ -28,7 +28,7 @@ function App() {
             } 
           />
         </Routes>
-        <Footer />
+        <Footer language={language} />
       </div>
     </Router>
   );

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import translations from '../i18n/translations';
 
-const SignUp = () => {
+const SignUp = ({ language }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -30,7 +30,7 @@ const SignUp = () => {
     return errors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
 
@@ -59,108 +59,87 @@ const SignUp = () => {
 
     try {
       // Register user using authService
-      authService.register(email, password);
-      // Redirect to login page after successful registration
       navigate('/login');
-    } catch (err) {
-      setErrors({ submit: err.message });
+    } catch (error) {
+      console.error('Signup failed:', error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-blue-200 to-blue-50 dark:from-dark-500 dark:via-dark-200 dark:to-dark-300 transition-colors duration-300">
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-xl p-8 transition-colors duration-300">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 text-transparent bg-clip-text mb-2">
-                Create Account
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Join us today!
-              </p>
-            </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-400 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          {translations[language].createAccount}
+        </h2>
+      </div>
 
-            {errors.submit && (
-              <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">
-                {errors.submit}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Email Address
-                </label>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white dark:bg-dark-100 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {translations[language].emailLabel}
+              </label>
+              <div className="mt-1">
                 <input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-dark-200 border border-gray-300 dark:border-dark-100 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                  placeholder="Enter your email"
+                  placeholder={translations[language].emailPlaceholder}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-dark-200 dark:text-white"
                 />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email}</p>
-                )}
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Password
-                </label>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {translations[language].passwordLabel}
+              </label>
+              <div className="mt-1">
                 <input
                   id="password"
+                  name="password"
                   type="password"
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-dark-200 border border-gray-300 dark:border-dark-100 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                  placeholder="Create a password"
+                  placeholder={translations[language].passwordPlaceholder}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-dark-200 dark:text-white"
                 />
-                {errors.password && (
-                  <ul className="mt-1 text-sm text-red-600 dark:text-red-400 list-disc list-inside">
-                    {errors.password.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-dark-200 border border-gray-300 dark:border-dark-100 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                  placeholder="Confirm your password"
-                />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.confirmPassword}</p>
-                )}
-              </div>
-
+            <div>
               <button
                 type="submit"
-                className="w-full px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                Sign Up
+                {translations[language].signUp}
               </button>
-            </form>
+            </div>
+          </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Already have an account?{' '}
-                <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-                  Sign in
-                </Link>
-              </p>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 text-gray-500 dark:text-gray-400">
+                  {translations[language].haveAccount}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                to="/login"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                {translations[language].login}
+              </Link>
             </div>
           </div>
         </div>

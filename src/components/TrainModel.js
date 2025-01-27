@@ -9,8 +9,8 @@ const TrainModel = ({ language }) => {
   const [answers, setAnswers] = useState([]);
   const [skillLevel, setSkillLevel] = useState(null);
   const [chatHistory] = useState([
-    { id: 1, title: 'Previous Chat 1',  },
-    { id: 2, title: 'Previous Chat 2',  },
+    { id: 1, title: translations[language].chatHistory1 },
+    { id: 2, title: translations[language].chatHistory2 },
   ]);
 
   // Seviye belirleme soruları
@@ -26,43 +26,43 @@ const TrainModel = ({ language }) => {
       ]
     },
     {
-      question: "Have you ever trained an AI model before?",
+      question: translations[language].question2,
       options: [
-        "Never",
-        "Once or twice",
-        "Several times",
-        "Regularly",
-        "Expert in model training"
+        translations[language].option2_1,
+        translations[language].option2_2,
+        translations[language].option2_3,
+        translations[language].option2_4,
+        translations[language].option2_5
       ]
     },
     {
-      question: "How familiar are you with data preprocessing?",
+      question: translations[language].question3,
       options: [
-        "Not familiar at all",
-        "Basic understanding",
-        "Moderate experience",
-        "Advanced experience",
-        "Expert level"
+        translations[language].option3_1,
+        translations[language].option3_2,
+        translations[language].option3_3,
+        translations[language].option3_4,
+        translations[language].option3_5
       ]
     },
     {
-      question: "What is your understanding of model parameters and hyperparameters?",
+      question: translations[language].question4,
       options: [
-        "No understanding",
-        "Basic concept",
-        "Moderate understanding",
-        "Advanced knowledge",
-        "Expert level"
+        translations[language].option4_1,
+        translations[language].option4_2,
+        translations[language].option4_3,
+        translations[language].option4_4,
+        translations[language].option4_5
       ]
     },
     {
-      question: "How would you rate your ability to evaluate model performance?",
+      question: translations[language].question5,
       options: [
-        "No ability",
-        "Basic metrics only",
-        "Moderate understanding",
-        "Advanced understanding",
-        "Expert level"
+        translations[language].option5_1,
+        translations[language].option5_2,
+        translations[language].option5_3,
+        translations[language].option5_4,
+        translations[language].option5_5
       ]
     }
   ];

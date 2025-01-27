@@ -33,4 +33,13 @@ const authService = {
   }
 };
 
-export default authService; 
+const login = async (email, password) => {
+  // Giriş işlemleri burada yapılacak
+  // Örneğin, API çağrısı yaparak kullanıcıyı doğrulama
+};
+
+export default {
+  ...authService,
+  login,
+  // Diğer fonksiyonlar...
+}; 
