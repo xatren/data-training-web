@@ -17,7 +17,7 @@ const translations = {
     chatHistory2: "Previous Chat 2",
     question: "Question",
     of: "of",
-    uploadPrompt: "Drop your file here or click to upload",
+    uploadPrompt: "Drop your file here or click to upload (.CSV/.XLSX)",
     
     // Questions
     question1: "What is your experience with machine learning?",
@@ -195,6 +195,7 @@ const translations = {
     ],
     logout: "Logout",
     accountSettings: "Account Settings",
+    invalidFileFormat: "Invalid file format. Please upload a CSV or XLSX file.",
   },
   tr: {
     // Navbar
@@ -214,7 +215,7 @@ const translations = {
     chatHistory2: "Önceki Sohbet 2",
     question: "Soru",
     of: "için",
-    uploadPrompt: "Dosyanızı buraya bırakın veya yüklemek için tıklayın",
+    uploadPrompt: "Dosyanızı buraya bırakın veya yüklemek için tıklayın (.CSV/.XLSX)",
     
     // Questions
     question1: "Makine öğrenimi konusundaki deneyiminiz nedir?",
@@ -392,7 +393,23 @@ const translations = {
     ],
     logout: "Oturumu Sonlandır",
     accountSettings: "Hesap Ayarları",
+    invalidFileFormat: "Geçersiz dosya formatı. Lütfen bir CSV veya XLSX dosyası yükleyin.",
+  },
+  trainModel: {
+    pageTitle: "Model Eğit",
+    uploadDataset: "Veri Seti Yükle",
+    trainYourModel: "Modeli Eğit",
+    trainingSteps: {
+      dataProcessing: "Veri işleniyor...",
+      training: "Model eğitiliyor...",
+      almostDone: "Eğitim tamamlanmak üzere...",
+      completed: "Eğitim tamamlandı!"
+    },
+    progressBar: {
+      estimatedTime: "Kalan süre tahmini: "
+    },
+    downloadButton: "Eğitilen Modeli İndir"
   }
 };
 
-export default translations; 
+export default translations;

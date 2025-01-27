@@ -12,6 +12,15 @@ const TrainModel = ({ language }) => {
     { id: 1, title: translations[language].chatHistory1 },
     { id: 2, title: translations[language].chatHistory2 },
   ]);
+  const [file, setFile] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isDataUploaded, setIsDataUploaded] = useState(false);
+  const [isTraining, setIsTraining] = useState(false);
+  const [trainingStep, setTrainingStep] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [estimatedTime, setEstimatedTime] = useState("");
+  const [isTrainingComplete, setIsTrainingComplete] = useState(false);
+  const [modelDownloadLink, setModelDownloadLink] = useState("");
 
   // Seviye belirleme soruları
   const questions = [
@@ -87,16 +96,25 @@ const TrainModel = ({ language }) => {
     }
   };
 
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    const validExtensions = ['.csv', '.xlsx'];
+
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+      if (!validExtensions.includes(`.${fileExtension}`)) {
+        setErrorMessage(translations[language].invalidFileFormat); // Geçersiz dosya formatı mesajı
+        setSelectedFile(null);
+      } else {
+        setErrorMessage(''); // Hata mesajını sıfırla
+        setSelectedFile(selectedFile);
+      }
+    }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (selectedFile) {
-      console.log('File submitted:', selectedFile);
-      // Add file processing logic here
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Dosya yükleme işlemleri burada yapılacak
   };
 
   const renderSkillLevelGuidance = () => {
@@ -142,6 +160,56 @@ const TrainModel = ({ language }) => {
     }
   };
 
+  const handleFileUpload = (event) => {
+    const uploadedFile = event.target.files[0];
+    setFile(uploadedFile);
+    // Veri seti yüklendiğinde butonu aktif hale getir
+    if (uploadedFile) {
+      setIsDataUploaded(true);
+    }
+  };
+
+  const handleTrainModel = async () => {
+    if (!file) return;
+    setIsTraining(true);
+    setTrainingStep("Veri işleniyor...");
+    setProgress(10);
+
+    // Örnek: Sunucuya dosya veya eğitim isteği gönderin
+    // fetch veya WebSocket aracılığıyla Python eğitim sürecini tetikleyebilirsiniz
+
+    // Eğitim süreci boyunca aşamaları simüle eden örnek kod (demo amaçlı):
+    setTimeout(() => {
+      setTrainingStep("Model eğitiliyor...");
+      setProgress(50);
+      setEstimatedTime("Yaklaşık 2 dakika");
+    }, 2000);
+
+    setTimeout(() => {
+      setTrainingStep("Eğitim tamamlanmak üzere...");
+      setProgress(90);
+      setEstimatedTime("30 saniye");
+    }, 4000);
+
+    setTimeout(() => {
+      setIsTrainingComplete(true);
+      setIsTraining(false);
+      setTrainingStep("Eğitim tamamlandı!");
+      setProgress(100);
+      setEstimatedTime("");
+      // Eğitim sonucu modelin indirme bağlantısı örnek olarak ayarlanıyor
+      setModelDownloadLink("/downloads/model_v1.h5");
+    }, 6000);
+  };
+
+  const handleDownloadModel = () => {
+    if (modelDownloadLink) {
+      // Kullanıcıya dosyayı indirtecek bir link oluşturabilir veya
+      // fetch ile blob indirip manuel indirme de yapabilirsiniz
+      window.location.href = modelDownloadLink;
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-dark-400 pt-40">
       {/* Sidebar Toggle Button - Her zaman görünür */}
@@ -163,7 +231,7 @@ const TrainModel = ({ language }) => {
 
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-dark-100 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-10 left-0 h-full w-64 bg-white dark:bg-dark-100 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -221,10 +289,10 @@ const TrainModel = ({ language }) => {
                   <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
                     <input
                       type="file"
-                      onChange={handleFileChange}
+                      accept=".csv, .xlsx"
+                      onChange={handleFileUpload}
                       className="hidden"
                       id="file-upload"
-                      accept=".txt,.pdf,.doc,.docx"
                     />
                     <label
                       htmlFor="file-upload"
@@ -238,6 +306,7 @@ const TrainModel = ({ language }) => {
                       </span>
                     </label>
                   </div>
+                  {errorMessage && <div className="text-red-600">{errorMessage}</div>}
                   <button
                     type="submit"
                     disabled={!selectedFile}
