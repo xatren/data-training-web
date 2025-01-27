@@ -1,5 +1,6 @@
 import React from 'react';
 import translations from '../i18n/translations';
+import { Link } from 'react-router-dom';
 
 const Home = ({ language }) => {
   return (
@@ -41,7 +42,9 @@ const Home = ({ language }) => {
                 </button>
               </a>
               <button className="px-8 py-3 rounded-lg border border-gray-600 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-200 transition-colors duration-200">
-                {translations[language].moreInformation}
+                <Link to="/information">
+                  {translations[language].moreInformation}
+                </Link>
               </button>
             </div>
           </div>

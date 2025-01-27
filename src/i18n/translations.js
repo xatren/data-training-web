@@ -131,6 +131,68 @@ const translations = {
     personalDataProtectionLaw: "Personal Data Protection Law",
     followUs: "Follow Us",
     footerRights: "All rights reserved",
+
+    // New additions
+    informationTitle: "Smart Data Analysis & Adaptive Clustering System",
+    backToHome: "← Back to Home",
+    infoSection1Title: "📌 What is the Project?",
+    infoSection1Content: "This system analyzes large and complex datasets to create groups (clusters) and performs real-time analysis. It works with both static data (e.g., table data) and streaming data (e.g., sensor data).",
+    infoSection2Title: "🎯 Purpose",
+    infoSection2Points: [
+      "Detect and correct missing/erroneous data",
+      "Clean meaningless data points",
+      "Create meaningful groups through analysis",
+      "Real-time performance tracking"
+    ],
+    infoSection3Title: "💡 How It Works?",
+    infoSection3Step1: "1️⃣ Data Preparation: Complete missing data and detect outliers",
+    infoSection3Step2: "2️⃣ Clustering: Group data by similar characteristics",
+    infoSection3Step3: "3️⃣ Real-Time Analysis: Continuously update groups with new data",
+    infoSection4Title: "📊 Benefits",
+    infoSection4Benefits: [
+      "Quick decision making with instant analysis",
+      "Better efficiency through meaningful grouping",
+      "Adaptability to various data sizes"
+    ],
+    infoSection5Title: "👨💻 Use Cases",
+    infoSection5Examples: [
+      {
+        title: "Retail",
+        description: "Group customers by shopping habits for targeted campaigns"
+      },
+      {
+        title: "Healthcare",
+        description: "Analyze patient data for better diagnosis processes"
+      }
+    ],
+    infoSection6Title: "🚀 How to Use?",
+    infoSection6Steps: [
+      "Upload your dataset (CSV/Excel)",
+      "Select analysis parameters",
+      "Let the system create clusters",
+      "Export results or integrate via API"
+    ],
+    infoSection7Title: "📋 Example Scenarios",
+    scenarioExamples: [
+      {
+        title: "E-commerce Customer Segmentation",
+        steps: [
+          "Upload customer purchase history",
+          "Analyze buying patterns",
+          "Create targeted marketing groups",
+          "Export customer lists by segment"
+        ]
+      },
+      {
+        title: "Sensor Data Monitoring",
+        steps: [
+          "Connect real-time data stream",
+          "Set anomaly detection thresholds",
+          "Monitor cluster changes",
+          "Receive instant alerts"
+        ]
+      }
+    ],
   },
   tr: {
     // Navbar
@@ -264,6 +326,68 @@ const translations = {
     personalDataProtectionLaw: "Kişisel Verilerin Korunması Kanunu",
     followUs: "Bizi Takip Edin",
     footerRights: "Tüm hakları saklıdır",
+
+    // New additions
+    informationTitle: "Akıllı Veri Analizi ve Adaptif Kümeleme Sistemi",
+    backToHome: "← Ana Sayfaya Dön",
+    infoSection1Title: "📌 Proje Nedir?",
+    infoSection1Content: "Bu sistem, büyük ve karmaşık veri kümelerini analiz ederek gruplar oluşturur ve gerçek zamanlı analizler yapar. Hem sabit verilerle (tablo verileri) hem de akan verilerle (sensör verileri) çalışabilir.",
+    infoSection2Title: "🎯 Amacı Nedir?",
+    infoSection2Points: [
+      "Eksik/hatalı verileri tespit ve düzeltme",
+      "Anlamsız veri noktalarını temizleme",
+      "Analizle anlamlı gruplar oluşturma",
+      "Gerçek zamanlı performans takibi"
+    ],
+    infoSection3Title: "💡 Nasıl Çalışır?",
+    infoSection3Step1: "1️⃣ Veri Hazırlama: Eksik verileri tamamlama ve aykırı değerleri tespit etme",
+    infoSection3Step2: "2️⃣ Kümeleme: Benzer özelliklere göre verileri gruplandırma",
+    infoSection3Step3: "3️⃣ Gerçek Zamanlı Analiz: Yeni verilerle grupları sürekli güncelleme",
+    infoSection4Title: "📊 Faydalar",
+    infoSection4Benefits: [
+      "Anlık analizlerle hızlı karar verme",
+      "Anlamlı gruplamayla verimlilik artışı",
+      "Farklı veri boyutlarına uyum sağlama"
+    ],
+    infoSection5Title: "👨💻 Kullanım Alanları",
+    infoSection5Examples: [
+      {
+        title: "Perakende",
+        description: "Müşterileri alışveriş alışkanlıklarına göre gruplandırma"
+      },
+      {
+        title: "Sağlık",
+        description: "Hasta verilerini analiz ederek teşhis süreçlerini iyileştirme"
+      }
+    ],
+    infoSection6Title: "🚀 Nasıl Kullanılır?",
+    infoSection6Steps: [
+      "Veri setinizi yükleyin (CSV/Excel)",
+      "Analiz parametrelerini seçin",
+      "Sistemin kümeler oluşturmasını bekleyin",
+      "Sonuçları dışa aktarın veya API ile entegre edin"
+    ],
+    infoSection7Title: "📋 Örnek Senaryolar",
+    scenarioExamples: [
+      {
+        title: "E-ticaret Müşteri Segmentasyonu",
+        steps: [
+          "Müşteri satın alma geçmişini yükleyin",
+          "Satın alma modellerini analiz edin",
+          "Hedefli pazarlama grupları oluşturun",
+          "Segmentlere göre müşteri listelerini dışa aktarın"
+        ]
+      },
+      {
+        title: "Sensör Verisi İzleme",
+        steps: [
+          "Gerçek zamanlı veri akışını bağlayın",
+          "Anomali tespit eşiklerini ayarlayın",
+          "Küme değişikliklerini izleyin",
+          "Anlık uyarılar alın"
+        ]
+      }
+    ],
   }
 };
 

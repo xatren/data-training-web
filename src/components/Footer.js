@@ -10,7 +10,7 @@ const Footer = ({ language }) => {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{translations[language].aboutUs}</h3>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">{translations[language].whatIsMuneccim}</a>
+                <a href="/information" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">{translations[language].whatIsMuneccim}</a>
               </li>
               <li>
                 <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">{translations[language].careerOpportunities}</a>

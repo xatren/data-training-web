@@ -7,6 +7,7 @@ import SignUp from './components/SignUp';
 import TrainModel from './components/TrainModel';
 import ProtectedRoute from './components/ProtectedRoute';
 import Footer from './components/Footer';
+import InformationPage from './components/InformationPage';
 
 function App() {
   const [language, setLanguage] = useState('en'); // Varsayılan dil İngilizce
@@ -26,6 +27,10 @@ function App() {
                 <TrainModel language={language} />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/information" 
+            element={<InformationPage language={language} />} 
           />
         </Routes>
         <Footer language={language} />
