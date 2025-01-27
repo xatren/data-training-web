@@ -1,13 +1,21 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Login logic will be implemented here
-    console.log('Login attempt:', { email, password });
+    try {
+      authService.login(email, password);
+      navigate('/train');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -23,6 +31,12 @@ const Login = () => {
                 Please sign in to your account
               </p>
             </div>
+
+            {error && (
+              <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>

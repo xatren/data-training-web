@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import authService from '../services/authService';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   // Şifre güvenlik kontrolü
   const validatePassword = (password) => {
@@ -55,9 +57,14 @@ const SignUp = () => {
       return;
     }
 
-    // If validation passes, handle signup
-    console.log('Sign up attempt:', { email, password });
-    // Add your signup logic here
+    try {
+      // Register user using authService
+      authService.register(email, password);
+      // Redirect to login page after successful registration
+      navigate('/login');
+    } catch (err) {
+      setErrors({ submit: err.message });
+    }
   };
 
   return (
@@ -73,6 +80,12 @@ const SignUp = () => {
                 Join us today!
               </p>
             </div>
+
+            {errors.submit && (
+              <div className="mb-4 p-3 rounded-lg bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">
+                {errors.submit}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
