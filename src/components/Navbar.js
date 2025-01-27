@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import translations from '../i18n/translations';
 
-const Navbar = () => {
+const Navbar = ({ language, setLanguage }) => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
   });
@@ -31,16 +32,16 @@ const Navbar = () => {
             </div>
             <div className="hidden md:ml-10 md:flex md:space-x-8">
               <a href="#" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors duration-200">
-                Pricing
+                {translations[language].pricing}
               </a>
               <a href="#" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors duration-200">
-                Enterprise
+                {translations[language].enterprise}
               </a>
               <a href="#" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors duration-200">
-                Features
+                {translations[language].features}
               </a>
               <a href="#" className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 text-sm font-medium transition-colors duration-200">
-                Blog
+                {translations[language].blog}
               </a>
             </div>
           </div>
@@ -59,11 +60,17 @@ const Navbar = () => {
                 </svg>
               )}
             </button>
+            <button
+              onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')}
+              className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-200 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors duration-200"
+            >
+              {language === 'en' ? 'TR' : 'EN'}
+            </button>
             <Link to="/signup" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
-              Sign Up
+              {translations[language].signUp}
             </Link>
             <Link to="/login" className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200">
-              Login
+              {translations[language].login}
             </Link>
           </div>
         </div>
