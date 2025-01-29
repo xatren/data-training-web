@@ -15,7 +15,7 @@ import logging
 load_dotenv()
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("gemini_api_key2"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
