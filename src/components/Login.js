@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { loginUser } from '../services/authService';
 import translations from '../i18n/translations';
 
 const Login = ({ language, setUserEmail }) => {
@@ -10,15 +10,16 @@ const Login = ({ language, setUserEmail }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const user = await authService.login(email, password);
+      const user = await loginUser(email, password);
       setUserEmail(user.email);
       navigate('/train');
+      setErrorMessage('');
     } catch (error) {
-      setErrorMessage(translations[language].loginError);
-      console.error('Login failed:', error);
+      console.error("Login error:", error);
+      setErrorMessage(error.message);
     }
   };
 
@@ -40,7 +41,7 @@ const Login = ({ language, setUserEmail }) => {
               {errorMessage}
             </div>
           )}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleLogin}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {translations[language].emailLabel}

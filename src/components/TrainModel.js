@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import translations from '../i18n/translations';
+import { registerUser, loginUser } from '../services/authService';
+import { storage } from '../services/firebaseConfig';
+import { ref, uploadBytes } from "firebase/storage";
+import { auth } from '../services/firebaseConfig';
 
 const TrainModel = ({ language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,6 +25,8 @@ const TrainModel = ({ language }) => {
   const [estimatedTime, setEstimatedTime] = useState("");
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [modelDownloadLink, setModelDownloadLink] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   // Seviye belirleme soruları
   const questions = [
@@ -160,12 +166,23 @@ const TrainModel = ({ language }) => {
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
     setFile(uploadedFile);
-    // Veri seti yüklendiğinde butonu aktif hale getir
+    
     if (uploadedFile) {
       setIsDataUploaded(true);
+      
+      // Firebase Storage'a yükleme işlemi
+      const user = auth.currentUser; // Giriş yapmış kullanıcıyı al
+      const storageRef = ref(storage, `uploads/${user.uid}/${uploadedFile.name}`); // Dosya referansı oluştur
+
+      try {
+        await uploadBytes(storageRef, uploadedFile); // Dosyayı yükle
+        console.log("File uploaded successfully!");
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
     }
   };
 
@@ -207,6 +224,24 @@ const TrainModel = ({ language }) => {
       // Kullanıcıya dosyayı indirtecek bir link oluşturabilir veya
       // fetch ile blob indirip manuel indirme de yapabilirsiniz
       window.location.href = modelDownloadLink;
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const user = await registerUser(email, password);
+      console.log("User registered:", user);
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const user = await loginUser(email, password);
+      console.log("User logged in:", user);
+    } catch (error) {
+      console.error("Login error:", error);
     }
   };
 
@@ -267,7 +302,7 @@ const TrainModel = ({ language }) => {
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
                   {translations[language].question} {currentQuestion + 1} {translations[language].of} {questions.length}
                 </h2>
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
+                <p className="text-gray-700 dark:text-white mb-4">
                   {questions[currentQuestion].question}
                 </p>
                 <div className="space-y-3">
@@ -275,7 +310,7 @@ const TrainModel = ({ language }) => {
                     <button
                       key={index}
                       onClick={() => handleAnswerSelect(index)}
-                      className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-200"
+                      className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-dark-200 dark:text-white transition-colors duration-200"
                     >
                       {option}
                     </button>

@@ -1,3 +1,6 @@
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebaseConfig";
+
 const authService = {
   register: (email, password) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -45,4 +48,33 @@ export const logout = () => {
     // Kullanıcının oturumunu kapatmak için gerekli işlemler
     localStorage.removeItem('currentUser'); // Kullanıcı bilgilerini temizle
     // Diğer oturum kapatma işlemleri...
+};
+
+// Kullanıcı oluşturma
+export const registerUser = async (email, password) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+// Kullanıcı girişi
+export const loginUser = async (email, password) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
+
+// Kullanıcının oturum durumunu kontrol et
+export const checkAuthState = (callback) => {
+  return onAuthStateChanged(auth, (user) => {
+    callback(user);
+  });
 }; 

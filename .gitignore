@@ -22,3 +22,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /backend/.env
+
+# Firebase
+.firebase/
+/src/services/firebaseConfig.js
+/src/services/authService.js

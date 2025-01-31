@@ -1,11 +1,12 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import authService from '../services/authService';
+import { auth } from '../services/firebaseConfig';
 
 const ProtectedRoute = ({ children }) => {
-  const currentUser = authService.getCurrentUser();
-  
-  if (!currentUser) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
     return <Navigate to="/login" />;
   }
 

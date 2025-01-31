@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import translations from '../i18n/translations';
+import { registerUser } from '../services/authService';
 
 const SignUp = ({ language }) => {
   const [email, setEmail] = useState('');
@@ -13,19 +14,19 @@ const SignUp = ({ language }) => {
   const validatePassword = (password) => {
     const errors = [];
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push(translations[language].passwordMinLength);
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push(translations[language].passwordUppercase);
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push(translations[language].passwordLowercase);
     }
     if (!/[0-9]/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push(translations[language].passwordNumber);
     }
     if (!/[!@#$%^&*]/.test(password)) {
-      errors.push('Password must contain at least one special character (!@#$%^&*)');
+      errors.push(translations[language].passwordSpecial);
     }
     return errors;
   };
@@ -34,22 +35,19 @@ const SignUp = ({ language }) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Email validation
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = translations[language].emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = translations[language].emailInvalid;
     }
 
-    // Password validation
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
       newErrors.password = passwordErrors;
     }
 
-    // Confirm password validation
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = translations[language].passwordsNotMatch;
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -58,10 +56,13 @@ const SignUp = ({ language }) => {
     }
 
     try {
-      // Register user using authService
+      const user = await registerUser(email, password);
+      console.log("User registered:", user);
+      setErrors({});
       navigate('/login');
     } catch (error) {
-      console.error('Signup failed:', error);
+      console.error("Registration error:", error);
+      setErrors({ general: error.message });
     }
   };
 
@@ -75,6 +76,33 @@ const SignUp = ({ language }) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white dark:bg-dark-100 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {errors.general && (
+            <div className="mb-4 text-red-600 text-center">
+              {errors.general}
+            </div>
+          )}
+          {errors.email && (
+            <div className="mb-4 text-red-600 text-center">
+              {errors.email}
+            </div>
+          )}
+          {errors.password && (
+            <div className="mb-4 text-red-600 text-center">
+              <ul>
+                {Array.isArray(errors.password) ? 
+                  errors.password.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  )) : 
+                  <li>{errors.password}</li>
+                }
+              </ul>
+            </div>
+          )}
+          {errors.confirmPassword && (
+            <div className="mb-4 text-red-600 text-center">
+              {errors.confirmPassword}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -109,6 +137,24 @@ const SignUp = ({ language }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={translations[language].passwordPlaceholder}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-dark-200 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {translations[language].confirmPasswordLabel}
+              </label>
+              <div className="mt-1">
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={translations[language].confirmPasswordPlaceholder}
                   className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-dark-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-dark-200 dark:text-white"
                 />
               </div>

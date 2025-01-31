@@ -81,6 +81,8 @@ const translations = {
     emailPlaceholder: "Enter your email",
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",
+    confirmPasswordLabel: "Confirm Password",
+    confirmPasswordPlaceholder: "Enter your password again",
     rememberMe: "Remember me",
     forgotPassword: "Forgot password?",
     noAccount: "Don't have an account?",
@@ -196,6 +198,19 @@ const translations = {
     logout: "Logout",
     accountSettings: "Account Settings",
     invalidFileFormat: "Invalid file format. Please upload a CSV or XLSX file.",
+
+    // Error messages
+    emailRequired: 'Email is required',
+    emailInvalid: 'Email is invalid',
+    passwordRequired: 'Password is required',
+    passwordMinLength: 'Password must be at least 8 characters long',
+    passwordUppercase: 'Password must contain at least one uppercase letter',
+    passwordLowercase: 'Password must contain at least one lowercase letter',
+    passwordNumber: 'Password must contain at least one number',
+    passwordSpecial: 'Password must contain at least one special character (!@#$%^&*)',
+    passwordsNotMatch: 'Passwords do not match',
+    userExists: 'User already exists',
+    invalidCredentials: 'Invalid email or password',
   },
   tr: {
     // Navbar
@@ -278,7 +293,9 @@ const translations = {
     emailLabel: "E-posta Adresi",
     emailPlaceholder: "E-posta adresinizi girin",
     passwordLabel: "Şifre",
+    confirmPasswordLabel: "Şifre Tekrarı",
     passwordPlaceholder: "Şifrenizi girin",
+    confirmPasswordPlaceholder: "Şifrenizi tekrar girin",
     rememberMe: "Beni hatırla",
     forgotPassword: "Şifremi unuttum?",
     noAccount: "Hesabınız yok mu?",
@@ -394,6 +411,19 @@ const translations = {
     logout: "Oturumu Sonlandır",
     accountSettings: "Hesap Ayarları",
     invalidFileFormat: "Geçersiz dosya formatı. Lütfen bir CSV veya XLSX dosyası yükleyin.",
+
+    // Error messages
+    emailRequired: 'Email adresi gereklidir',
+    emailInvalid: 'Geçersiz email adresi',
+    passwordRequired: 'Şifre gereklidir',
+    passwordMinLength: 'Şifre en az 8 karakter olmalıdır',
+    passwordUppercase: 'Şifre en az bir büyük harf içermelidir',
+    passwordLowercase: 'Şifre en az bir küçük harf içermelidir',
+    passwordNumber: 'Şifre en az bir rakam içermelidir',
+    passwordSpecial: 'Şifre en az bir özel karakter içermelidir (!@#$%^&*)',
+    passwordsNotMatch: 'Şifreler eşleşmiyor',
+    userExists: 'Bu kullanıcı zaten mevcut',
+    invalidCredentials: 'Geçersiz email veya şifre',
   },
   trainModel: {
     pageTitle: "Model Eğit",
