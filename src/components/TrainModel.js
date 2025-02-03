@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import translations from '../i18n/translations';
 import { registerUser, loginUser } from '../services/authService';
-import { storage } from '../services/firebaseConfig';
+import { storage, db, auth } from '../services/firebaseConfig';
 import { ref, uploadBytes } from "firebase/storage";
-import { auth } from '../services/firebaseConfig';
+import { doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
 
 const TrainModel = ({ language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -12,10 +12,7 @@ const TrainModel = ({ language }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [skillLevel, setSkillLevel] = useState(null);
-  const [chatHistory] = useState([
-    { id: 1, title: translations[language].chatHistory1 },
-    { id: 2, title: translations[language].chatHistory2 },
-  ]);
+  const [chatHistory, setChatHistory] = useState([]);
   const [file, setFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isDataUploaded, setIsDataUploaded] = useState(false);
@@ -82,7 +79,36 @@ const TrainModel = ({ language }) => {
     }
   ];
 
-  const handleAnswerSelect = (answerIndex) => {
+  useEffect(() => {
+    const fetchUserAnswers = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, "userAnswers", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setAnswers(data.answers);
+          setSkillLevel(data.skillLevel);
+          setShowAssessment(false);
+        }
+      }
+    };
+
+    const fetchChatHistory = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const chatQuery = query(collection(db, "chatHistory"), where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(chatQuery);
+        const chats = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setChatHistory(chats);
+      }
+    };
+
+    fetchUserAnswers();
+    fetchChatHistory();
+  }, []);
+
+  const handleAnswerSelect = async (answerIndex) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = answerIndex;
     setAnswers(newAnswers);
@@ -90,7 +116,6 @@ const TrainModel = ({ language }) => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Calculate skill level based on answers
       const averageScore = newAnswers.reduce((a, b) => a + b, 0) / newAnswers.length;
       let level;
       if (averageScore < 1) level = "beginner";
@@ -99,6 +124,14 @@ const TrainModel = ({ language }) => {
       
       setSkillLevel(level);
       setShowAssessment(false);
+
+      const user = auth.currentUser;
+      if (user) {
+        await setDoc(doc(db, "userAnswers", user.uid), {
+          answers: newAnswers,
+          skillLevel: level
+        });
+      }
     }
   };
 
@@ -168,21 +201,43 @@ const TrainModel = ({ language }) => {
 
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
-    setFile(uploadedFile);
+    setSelectedFile(uploadedFile);
     
     if (uploadedFile) {
       setIsDataUploaded(true);
       
-      // Firebase Storage'a yükleme işlemi
-      const user = auth.currentUser; // Giriş yapmış kullanıcıyı al
-      const storageRef = ref(storage, `uploads/${user.uid}/${uploadedFile.name}`); // Dosya referansı oluştur
+      const user = auth.currentUser;
+      const storageRef = ref(storage, `uploads/${user.uid}/${uploadedFile.name}`);
 
       try {
-        await uploadBytes(storageRef, uploadedFile); // Dosyayı yükle
+        await uploadBytes(storageRef, uploadedFile);
         console.log("File uploaded successfully!");
+
+        // Sohbet geçmişine yeni bir kayıt ekle
+        if (user) {
+          await addDoc(collection(db, "chatHistory"), {
+            userId: user.uid,
+            fileName: uploadedFile.name,
+            timestamp: new Date()
+          });
+          // Sohbet geçmişini güncelle
+          const chatQuery = query(collection(db, "chatHistory"), where("userId", "==", user.uid));
+          const querySnapshot = await getDocs(chatQuery);
+          const chats = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setChatHistory(chats);
+        }
       } catch (error) {
         console.error("Error uploading file:", error);
       }
+    }
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    try {
+      await deleteDoc(doc(db, "chatHistory", chatId));
+      setChatHistory(chatHistory.filter(chat => chat.id !== chatId));
+    } catch (error) {
+      console.error("Error deleting chat:", error);
     }
   };
 
@@ -277,11 +332,26 @@ const TrainModel = ({ language }) => {
           <div className="space-y-2">
             {chatHistory.map((chat) => (
               <div
-                key={chat.id}
-                className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200"
+              key={chat.id}
+              className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200 relative"
+            >
+              <h3 className="text-sm font-medium text-gray-800 dark:text-white">{chat.fileName}</h3>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(chat.timestamp.seconds * 1000).toLocaleString()}</span>
+              <button
+                onClick={() => handleDeleteChat(chat.id)}
+                className="absolute right-2 top-2 text-red-600 hover:text-red-800"
+                aria-label="Delete chat"
               >
-                <h3 className="text-sm font-medium text-gray-800 dark:text-white">{chat.title}</h3>
-              </div>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path
+                    fillRule="evenodd"
+                    d="M9 3a1 1 0 011-1h4a1 1 0 011 1v1h5a1 1 0 110 2h-1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h5V3zm2 2h2V4h-2v1zM7 6v14h10V6H7zm3 3a1 1 0 012 0v8a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v8a1 1 0 11-2 0V9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+            
             ))}
           </div>
         </div>
@@ -340,6 +410,14 @@ const TrainModel = ({ language }) => {
                         {selectedFile ? selectedFile.name : translations[language].uploadPrompt}
                       </span>
                     </label>
+                    {selectedFile && (
+                      <div className="mt-4 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="ml-2 text-gray-700 dark:text-gray-300">{selectedFile.name}</span>
+                      </div>
+                    )}
                   </div>
                   {errorMessage && <div className="text-red-600">{errorMessage}</div>}
                   <button
