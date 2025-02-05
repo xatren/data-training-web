@@ -211,6 +211,8 @@ const translations = {
     passwordsNotMatch: 'Passwords do not match',
     userExists: 'User already exists',
     invalidCredentials: 'Invalid email or password',
+    noCsvUploaded: "No CSV file uploaded yet.",
+    fetchError: "Failed to fetch the CSV file. Please try again later.",
   },
   tr: {
     // Navbar
@@ -424,6 +426,8 @@ const translations = {
     passwordsNotMatch: 'Şifreler eşleşmiyor',
     userExists: 'Bu kullanıcı zaten mevcut',
     invalidCredentials: 'Geçersiz email veya şifre',
+    noCsvUploaded: "No CSV file uploaded yet.",
+    fetchError: "Failed to fetch the CSV file. Please try again later.",
   },
   trainModel: {
     pageTitle: "Model Eğit",

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { usePapaParse } from 'react-papaparse';
+import { useTable, usePagination, useSortBy, useFilters } from 'react-table';
 import translations from '../i18n/translations';
 import { registerUser, loginUser } from '../services/authService';
 import { storage, db, auth } from '../services/firebaseConfig';
@@ -8,12 +10,12 @@ import { doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, where, getDo
 const TrainModel = ({ language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [csvData, setCsvData] = useState([]);
   const [showAssessment, setShowAssessment] = useState(true);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [skillLevel, setSkillLevel] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
-  const [file, setFile] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isDataUploaded, setIsDataUploaded] = useState(false);
   const [isTraining, setIsTraining] = useState(false);
@@ -24,6 +26,10 @@ const TrainModel = ({ language }) => {
   const [modelDownloadLink, setModelDownloadLink] = useState("");
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { readString } = usePapaParse();
 
   // Seviye belirleme soruları
   const questions = [
@@ -106,7 +112,7 @@ const TrainModel = ({ language }) => {
 
     fetchUserAnswers();
     fetchChatHistory();
-  }, []);
+  }, [language]);
 
   const handleAnswerSelect = async (answerIndex) => {
     const newAnswers = [...answers];
@@ -135,70 +141,6 @@ const TrainModel = ({ language }) => {
     }
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    const validExtensions = ['.csv', '.xlsx'];
-
-    if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
-      if (!validExtensions.includes(`.${fileExtension}`)) {
-        setErrorMessage(translations[language].invalidFileFormat); // Geçersiz dosya formatı mesajı
-        setSelectedFile(null);
-      } else {
-        setErrorMessage(''); // Hata mesajını sıfırla
-        setSelectedFile(selectedFile);
-      }
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Dosya yükleme işlemleri burada yapılacak
-  };
-
-  const renderSkillLevelGuidance = () => {
-    switch (skillLevel) {
-      case "beginner":
-        return (
-          <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-            <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">{translations[language].beginnerRecommendations}</h3>
-            <ul className="list-disc list-inside text-blue-700 dark:text-blue-300 space-y-1">
-              <li>{translations[language].beginnerTip1}</li>
-              <li>{translations[language].beginnerTip2}</li>
-              <li>{translations[language].beginnerTip3}</li>
-              <li>{translations[language].beginnerTip4}</li>
-            </ul>
-          </div>
-        );
-      case "intermediate":
-        return (
-          <div className="mb-8 p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
-            <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">{translations[language].intermediateRecommendations}</h3>
-            <ul className="list-disc list-inside text-green-700 dark:text-green-300 space-y-1">
-              <li>{translations[language].intermediateTip1}</li>
-              <li>{translations[language].intermediateTip2}</li>
-              <li>{translations[language].intermediateTip3}</li>
-              <li>{translations[language].intermediateTip4}</li>
-            </ul>
-          </div>
-        );
-      case "advanced":
-        return (
-          <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-            <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">{translations[language].advancedRecommendations}</h3>
-            <ul className="list-disc list-inside text-purple-700 dark:text-purple-300 space-y-1">
-              <li>{translations[language].advancedTip1}</li>
-              <li>{translations[language].advancedTip2}</li>
-              <li>{translations[language].advancedTip3}</li>
-              <li>{translations[language].advancedTip4}</li>
-            </ul>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
     setSelectedFile(uploadedFile);
@@ -212,6 +154,20 @@ const TrainModel = ({ language }) => {
       try {
         await uploadBytes(storageRef, uploadedFile);
         console.log("File uploaded successfully!");
+
+        // Parse the CSV file immediately after upload
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          readString(text, {
+            header: true,
+            complete: (results) => {
+              setCsvData(results.data);
+              setIsAnalyzed(true); // Automatically analyze after parsing
+            }
+          });
+        };
+        reader.readAsText(uploadedFile);
 
         // Sohbet geçmişine yeni bir kayıt ekle
         if (user) {
@@ -242,7 +198,7 @@ const TrainModel = ({ language }) => {
   };
 
   const handleTrainModel = async () => {
-    if (!file) return;
+    if (!selectedFile) return;
     setIsTraining(true);
     setTrainingStep("Veri işleniyor...");
     setProgress(10);
@@ -299,6 +255,190 @@ const TrainModel = ({ language }) => {
       console.error("Login error:", error);
     }
   };
+
+  const handleAnalyze = () => {
+    setIsAnalyzed(true);
+  };
+
+  const renderSkillLevelGuidance = () => {
+    switch (skillLevel) {
+      case "beginner":
+        return (
+          <div className="mb-8 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+            <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">{translations[language].beginnerRecommendations}</h3>
+            <ul className="list-disc list-inside text-blue-700 dark:text-blue-300 space-y-1">
+              <li>{translations[language].beginnerTip1}</li>
+              <li>{translations[language].beginnerTip2}</li>
+              <li>{translations[language].beginnerTip3}</li>
+              <li>{translations[language].beginnerTip4}</li>
+            </ul>
+          </div>
+        );
+      case "intermediate":
+        return (
+          <div className="mb-8 p-4 bg-green-50 dark:bg-green-900/30 rounded-lg">
+            <h3 className="font-semibold text-green-800 dark:text-green-200 mb-2">{translations[language].intermediateRecommendations}</h3>
+            <ul className="list-disc list-inside text-green-700 dark:text-green-300 space-y-1">
+              <li>{translations[language].intermediateTip1}</li>
+              <li>{translations[language].intermediateTip2}</li>
+              <li>{translations[language].intermediateTip3}</li>
+              <li>{translations[language].intermediateTip4}</li>
+            </ul>
+          </div>
+        );
+      case "advanced":
+        return (
+          <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+            <h3 className="font-semibold text-purple-800 dark:text-purple-200 mb-2">{translations[language].advancedRecommendations}</h3>
+            <ul className="list-disc list-inside text-purple-700 dark:text-purple-300 space-y-1">
+              <li>{translations[language].advancedTip1}</li>
+              <li>{translations[language].advancedTip2}</li>
+              <li>{translations[language].advancedTip3}</li>
+              <li>{translations[language].advancedTip4}</li>
+            </ul>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const DefaultColumnFilter = ({
+    column: { filterValue, setFilter },
+  }) => {
+    return (
+      <input
+        value={filterValue || ''}
+        onChange={e => {
+          setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
+        }}
+        placeholder={`Search...`}
+        className="mt-1 block w-full"
+      />
+    );
+  };
+
+  const columns = useMemo(() => {
+    if (csvData.length === 0) return [];
+    return Object.keys(csvData[0]).map(key => ({
+      Header: key,
+      accessor: key,
+      Filter: DefaultColumnFilter,
+    }));
+  }, [csvData]);
+
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page,
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize: setTablePageSize,
+    state: { pageIndex, pageSize: currentPageSize },
+  } = useTable(
+    {
+      columns,
+      data: csvData,
+      initialState: { pageIndex: 0, pageSize },
+    },
+    useFilters,
+    useSortBy,
+    usePagination
+  );
+
+  const renderCSVTable = () => (
+    <div className="overflow-x-auto max-h-full">
+      <table {...getTableProps()} className="min-w-full bg-white dark:bg-dark-100">
+        <thead>
+          {headerGroups.map(headerGroup => (
+            <tr {...headerGroup.getHeaderGroupProps()}>
+              {headerGroup.headers.map(column => (
+                <th
+                  {...column.getHeaderProps(column.getSortByToggleProps())}
+                  className="px-4 py-2 border-b-2 border-gray-200 dark:border-dark-200 text-left"
+                >
+                  {column.render('Header')}
+                  <span>
+                    {column.isSorted
+                      ? column.isSortedDesc
+                        ? ' 🔽'
+                        : ' 🔼'
+                      : ''}
+                  </span>
+                  <div>{column.canFilter ? column.render('Filter') : null}</div>
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {page.map(row => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()} className="hover:bg-gray-100 dark:hover:bg-dark-200">
+                {row.cells.map(cell => (
+                  <td {...cell.getCellProps()} className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
+                    {cell.render('Cell')}
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <div className="pagination">
+        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+          {'<<'}
+        </button>{' '}
+        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+          {'<'}
+        </button>{' '}
+        <button onClick={() => nextPage()} disabled={!canNextPage}>
+          {'>'}
+        </button>{' '}
+        <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+          {'>>'}
+        </button>{' '}
+        <span>
+          Page{' '}
+          <strong>
+            {pageIndex + 1} of {pageOptions.length}
+          </strong>{' '}
+        </span>
+        <span>
+          | Go to page:{' '}
+          <input
+            type="number"
+            defaultValue={pageIndex + 1}
+            onChange={e => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              gotoPage(page);
+            }}
+            style={{ width: '100px' }}
+          />
+        </span>{' '}
+        <select
+          value={currentPageSize}
+          onChange={e => {
+            setTablePageSize(Number(e.target.value));
+          }}
+        >
+          {[10, 20, 30, 40, 50].map(pageSize => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-dark-400 pt-40">
@@ -390,7 +530,7 @@ const TrainModel = ({ language }) => {
             ) : (
               <>
                 {renderSkillLevelGuidance()}
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                   <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
                     <input
                       type="file"
@@ -420,18 +560,8 @@ const TrainModel = ({ language }) => {
                     )}
                   </div>
                   {errorMessage && <div className="text-red-600">{errorMessage}</div>}
-                  <button
-                    type="submit"
-                    disabled={!selectedFile}
-                    className={`w-full px-4 py-3 rounded-lg ${
-                      selectedFile
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    } transition-colors duration-200`}
-                  >
-                    {translations[language].trainModel}
-                  </button>
                 </form>
+                {isAnalyzed && renderCSVTable()}
               </>
             )}
           </div>
