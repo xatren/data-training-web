@@ -28,6 +28,7 @@ const TrainModel = ({ language }) => {
   const [password, setPassword] = useState('');
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   const [pageSize, setPageSize] = useState(10);
+  const [isCsvLoaded, setIsCsvLoaded] = useState(false);
 
   const { readString } = usePapaParse();
 
@@ -164,6 +165,7 @@ const TrainModel = ({ language }) => {
             complete: (results) => {
               setCsvData(results.data);
               setIsAnalyzed(true); // Automatically analyze after parsing
+              setIsCsvLoaded(true); // CSV yüklendiğinde durumu güncelle
             }
           });
         };
@@ -354,7 +356,7 @@ const TrainModel = ({ language }) => {
   );
 
   const renderCSVTable = () => (
-    <div className="overflow-x-auto max-h-full">
+    <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
       <table {...getTableProps()} className="min-w-full bg-white dark:bg-dark-100">
         <thead>
           {headerGroups.map(headerGroup => (
@@ -441,7 +443,7 @@ const TrainModel = ({ language }) => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-dark-400 pt-40">
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-dark-400 pt-40">
       {/* Sidebar Toggle Button - Her zaman görünür */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -503,7 +505,7 @@ const TrainModel = ({ language }) => {
           isSidebarOpen ? 'ml-64' : 'ml-0'
         }`}
       >
-        <div className="max-w-3xl mx-auto">
+        <div className={`max-w-${isCsvLoaded ? '6xl' : '4xl'} mx-auto flex-grow`}>
           <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-8">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{translations[language].trainModel}</h1>
 
