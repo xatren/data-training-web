@@ -27,3 +27,6 @@ yarn-error.log*
 .firebase/
 /src/services/firebaseConfig.js
 /src/services/authService.js
+
+# CORS
+cors.json

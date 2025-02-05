@@ -213,6 +213,11 @@ const translations = {
     invalidCredentials: 'Invalid email or password',
     noCsvUploaded: "No CSV file uploaded yet.",
     fetchError: "Failed to fetch the CSV file. Please try again later.",
+    csvParseError: "Error parsing CSV file. Please make sure the file is in correct format.",
+
+    newChat: "New Chat",
+    fileNotFound: "The requested file could not be found in storage.",
+    unauthorizedAccess: "You don't have permission to access this file.",
   },
   tr: {
     // Navbar
@@ -413,6 +418,7 @@ const translations = {
     logout: "Oturumu Sonlandır",
     accountSettings: "Hesap Ayarları",
     invalidFileFormat: "Geçersiz dosya formatı. Lütfen bir CSV veya XLSX dosyası yükleyin.",
+    csvParseError: "CSV dosyası işlenirken hata oluştu. Lütfen dosya formatının doğru olduğundan emin olun.",
 
     // Error messages
     emailRequired: 'Email adresi gereklidir',
@@ -428,6 +434,10 @@ const translations = {
     invalidCredentials: 'Geçersiz email veya şifre',
     noCsvUploaded: "No CSV file uploaded yet.",
     fetchError: "Failed to fetch the CSV file. Please try again later.",
+
+    newChat: "Yeni Sohbet",
+    fileNotFound: "İstenen dosya depolama alanında bulunamadı.",
+    unauthorizedAccess: "Bu dosyaya erişim izniniz bulunmuyor.",
   },
   trainModel: {
     pageTitle: "Model Eğit",

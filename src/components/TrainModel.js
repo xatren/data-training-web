@@ -4,7 +4,7 @@ import { useTable, usePagination, useSortBy, useFilters } from 'react-table';
 import translations from '../i18n/translations';
 import { registerUser, loginUser } from '../services/authService';
 import { storage, db, auth } from '../services/firebaseConfig';
-import { ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
 
 const TrainModel = ({ language }) => {
@@ -262,6 +262,76 @@ const TrainModel = ({ language }) => {
     setIsAnalyzed(true);
   };
 
+  const handleNewChat = () => {
+    // Mevcut durumu sıfırla
+    setSelectedFile(null);
+    setCsvData([]);
+    setIsDataUploaded(false);
+    setIsAnalyzed(false);
+    setIsCsvLoaded(false);
+    setIsTraining(false);
+    setTrainingStep("");
+    setProgress(0);
+    setEstimatedTime("");
+    setIsTrainingComplete(false);
+    setModelDownloadLink("");
+    setErrorMessage("");
+  };
+
+  const handleChatSelect = async (chat) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        setErrorMessage(translations[language].unauthorizedAccess || 'You must be logged in to access this file.');
+        return;
+      }
+
+      const fileRef = ref(storage, `uploads/${user.uid}/${chat.fileName}`);
+      
+      try {
+        const url = await getDownloadURL(fileRef);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/csv;charset=UTF-8',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const text = await response.text();
+        
+        readString(text, {
+          header: true,
+          complete: (results) => {
+            if (results.data && results.data.length > 0) {
+              setCsvData(results.data);
+              setSelectedFile({ name: chat.fileName });
+              setIsAnalyzed(true);
+              setIsCsvLoaded(true);
+              setIsDataUploaded(true);
+              setErrorMessage('');
+            } else {
+              throw new Error('CSV data is empty or invalid');
+            }
+          },
+          error: (error) => {
+            console.error('Error parsing CSV:', error);
+            setErrorMessage(translations[language].csvParseError);
+          }
+        });
+      } catch (storageError) {
+        console.error('Error accessing file in storage:', storageError);
+        setErrorMessage(translations[language].fetchError);
+      }
+    } catch (error) {
+      console.error('Error in handleChatSelect:', error);
+      setErrorMessage(translations[language].fetchError);
+    }
+  };
+
   const renderSkillLevelGuidance = () => {
     switch (skillLevel) {
       case "beginner":
@@ -442,6 +512,118 @@ const TrainModel = ({ language }) => {
     </div>
   );
 
+  const renderContent = () => {
+    if (showAssessment) {
+      return (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+            {translations[language].question} {currentQuestion + 1} {translations[language].of} {questions.length}
+          </h2>
+          <p className="text-gray-700 dark:text-white mb-4">
+            {questions[currentQuestion].question}
+          </p>
+          <div className="space-y-3">
+            {questions[currentQuestion].options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswerSelect(index)}
+                className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-dark-200 dark:text-white transition-colors duration-200"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (!isCsvLoaded) {
+      return (
+        <>
+          {renderSkillLevelGuidance()}
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+            <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
+              <input
+                type="file"
+                accept=".csv, .xlsx"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center justify-center"
+              >
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span className="mt-2 text-gray-600 dark:text-gray-300">
+                  {selectedFile ? selectedFile.name : translations[language].uploadPrompt}
+                </span>
+              </label>
+              {selectedFile && (
+                <div className="mt-4 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="ml-2 text-gray-700 dark:text-gray-300">{selectedFile.name}</span>
+                </div>
+              )}
+            </div>
+            {errorMessage && <div className="text-red-600">{errorMessage}</div>}
+          </form>
+        </>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {renderCSVTable()}
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={handleTrainModel}
+            disabled={isTraining}
+            className={`px-6 py-3 rounded-lg text-white font-semibold transition-colors duration-200 ${
+              isTraining 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isTraining ? translations[language].training : translations[language].trainModel}
+          </button>
+        </div>
+        {isTraining && (
+          <div className="mt-4">
+            <div className="text-center text-gray-700 dark:text-gray-300 mb-2">
+              {trainingStep}
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+            {estimatedTime && (
+              <div className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
+                {estimatedTime}
+              </div>
+            )}
+          </div>
+        )}
+        {isTrainingComplete && modelDownloadLink && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleDownloadModel}
+              className="px-6 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors duration-200"
+            >
+              {translations[language].downloadModel}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-400">
       <div className="flex-1 pt-40 pb-24">
@@ -469,32 +651,64 @@ const TrainModel = ({ language }) => {
           }`}
         >
           <div className="p-4 pt-20">
+            {/* Yeni Sohbet Butonu */}
+            <button
+              onClick={handleNewChat}
+              className="w-full mb-6 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+            >
+              <svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M12 4v16m8-8H4" 
+                />
+              </svg>
+              <span>{translations[language].newChat || 'New Chat'}</span>
+            </button>
+
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{translations[language].chatHistory}</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                {translations[language].chatHistory}
+              </h2>
             </div>
             <div className="space-y-2">
               {chatHistory.map((chat) => (
                 <div
-                key={chat.id}
-                className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200 relative"
-              >
-                <h3 className="text-sm font-medium text-gray-800 dark:text-white">{chat.fileName}</h3>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(chat.timestamp.seconds * 1000).toLocaleString()}</span>
-                <button
-                  onClick={() => handleDeleteChat(chat.id)}
-                  className="absolute right-2 top-2 text-red-600 hover:text-red-800"
-                  aria-label="Delete chat"
+                  key={chat.id}
+                  className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200 relative group"
+                  onClick={() => handleChatSelect(chat)}
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                      fillRule="evenodd"
-                      d="M9 3a1 1 0 011-1h4a1 1 0 011 1v1h5a1 1 0 110 2h-1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h5V3zm2 2h2V4h-2v1zM7 6v14h10V6H7zm3 3a1 1 0 012 0v8a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v8a1 1 0 11-2 0V9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-              
+                  <div className="pr-8">
+                    <h3 className="text-sm font-medium text-gray-800 dark:text-white">
+                      {chat.fileName}
+                    </h3>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(chat.timestamp.seconds * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteChat(chat.id);
+                    }}
+                    className="absolute right-2 top-2 text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    aria-label="Delete chat"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path
+                        fillRule="evenodd"
+                        d="M9 3a1 1 0 011-1h4a1 1 0 011 1v1h5a1 1 0 110 2h-1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h5V3zm2 2h2V4h-2v1zM7 6v14h10V6H7zm3 3a1 1 0 012 0v8a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v8a1 1 0 11-2 0V9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -509,64 +723,7 @@ const TrainModel = ({ language }) => {
           <div className={`max-w-${isCsvLoaded ? '6xl' : '4xl'} mx-auto`}>
             <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-8">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{translations[language].trainModel}</h1>
-
-              {showAssessment ? (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                    {translations[language].question} {currentQuestion + 1} {translations[language].of} {questions.length}
-                  </h2>
-                  <p className="text-gray-700 dark:text-white mb-4">
-                    {questions[currentQuestion].question}
-                  </p>
-                  <div className="space-y-3">
-                    {questions[currentQuestion].options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswerSelect(index)}
-                        className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-dark-200 dark:text-white transition-colors duration-200"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {renderSkillLevelGuidance()}
-                  <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                    <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
-                      <input
-                        type="file"
-                        accept=".csv, .xlsx"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="file-upload"
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className="cursor-pointer flex flex-col items-center justify-center"
-                      >
-                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        <span className="mt-2 text-gray-600 dark:text-gray-300">
-                          {selectedFile ? selectedFile.name : translations[language].uploadPrompt}
-                        </span>
-                      </label>
-                      {selectedFile && (
-                        <div className="mt-4 flex items-center justify-center">
-                          <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="ml-2 text-gray-700 dark:text-gray-300">{selectedFile.name}</span>
-                        </div>
-                      )}
-                    </div>
-                    {errorMessage && <div className="text-red-600">{errorMessage}</div>}
-                  </form>
-                  {isAnalyzed && renderCSVTable()}
-                </>
-              )}
+              {renderContent()}
             </div>
           </div>
         </div>
