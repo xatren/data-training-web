@@ -443,129 +443,131 @@ const TrainModel = ({ language }) => {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-dark-400 pt-40">
-      {/* Sidebar Toggle Button - Her zaman görünür */}
-      <button
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed left-4 top-20 z-50 p-2 rounded-lg bg-white dark:bg-dark-100 shadow-lg hover:bg-gray-100 dark:hover:bg-dark-200 transition-all duration-200"
-        aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-      >
-        {isSidebarOpen ? (
-          <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          </svg>
-        )}
-      </button>
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-400">
+      <div className="flex-1 pt-40 pb-24">
+        {/* Sidebar Toggle Button - Her zaman görünür */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="fixed left-4 top-20 z-50 p-2 rounded-lg bg-white dark:bg-dark-100 shadow-lg hover:bg-gray-100 dark:hover:bg-dark-200 transition-all duration-200"
+          aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+        >
+          {isSidebarOpen ? (
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          )}
+        </button>
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed top-10 left-0 h-full w-64 bg-white dark:bg-dark-100 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="p-4 pt-20">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{translations[language].chatHistory}</h2>
-          </div>
-          <div className="space-y-2">
-            {chatHistory.map((chat) => (
-              <div
-              key={chat.id}
-              className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200 relative"
-            >
-              <h3 className="text-sm font-medium text-gray-800 dark:text-white">{chat.fileName}</h3>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(chat.timestamp.seconds * 1000).toLocaleString()}</span>
-              <button
-                onClick={() => handleDeleteChat(chat.id)}
-                className="absolute right-2 top-2 text-red-600 hover:text-red-800"
-                aria-label="Delete chat"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path
-                    fillRule="evenodd"
-                    d="M9 3a1 1 0 011-1h4a1 1 0 011 1v1h5a1 1 0 110 2h-1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h5V3zm2 2h2V4h-2v1zM7 6v14h10V6H7zm3 3a1 1 0 012 0v8a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v8a1 1 0 11-2 0V9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+        {/* Sidebar */}
+        <aside 
+          className={`fixed top-10 left-0 h-full w-64 bg-white dark:bg-dark-100 shadow-lg z-40 transform transition-transform duration-300 ease-in-out ${
+            isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="p-4 pt-20">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">{translations[language].chatHistory}</h2>
             </div>
-            
-            ))}
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div 
-        className={`flex-1 transition-all duration-300 p-8 ${
-          isSidebarOpen ? 'ml-64' : 'ml-0'
-        }`}
-      >
-        <div className={`max-w-${isCsvLoaded ? '6xl' : '4xl'} mx-auto flex-grow`}>
-          <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-8">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{translations[language].trainModel}</h1>
-
-            {showAssessment ? (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                  {translations[language].question} {currentQuestion + 1} {translations[language].of} {questions.length}
-                </h2>
-                <p className="text-gray-700 dark:text-white mb-4">
-                  {questions[currentQuestion].question}
-                </p>
-                <div className="space-y-3">
-                  {questions[currentQuestion].options.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleAnswerSelect(index)}
-                      className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-dark-200 dark:text-white transition-colors duration-200"
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <>
-                {renderSkillLevelGuidance()}
-                <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                  <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
-                    <input
-                      type="file"
-                      accept=".csv, .xlsx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="file-upload"
+            <div className="space-y-2">
+              {chatHistory.map((chat) => (
+                <div
+                key={chat.id}
+                className="p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-200 cursor-pointer transition-colors duration-200 relative"
+              >
+                <h3 className="text-sm font-medium text-gray-800 dark:text-white">{chat.fileName}</h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(chat.timestamp.seconds * 1000).toLocaleString()}</span>
+                <button
+                  onClick={() => handleDeleteChat(chat.id)}
+                  className="absolute right-2 top-2 text-red-600 hover:text-red-800"
+                  aria-label="Delete chat"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      fillRule="evenodd"
+                      d="M9 3a1 1 0 011-1h4a1 1 0 011 1v1h5a1 1 0 110 2h-1v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6H3a1 1 0 110-2h5V3zm2 2h2V4h-2v1zM7 6v14h10V6H7zm3 3a1 1 0 012 0v8a1 1 0 11-2 0V9zm4 0a1 1 0 112 0v8a1 1 0 11-2 0V9z"
+                      clipRule="evenodd"
                     />
-                    <label
-                      htmlFor="file-upload"
-                      className="cursor-pointer flex flex-col items-center justify-center"
-                    >
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                      </svg>
-                      <span className="mt-2 text-gray-600 dark:text-gray-300">
-                        {selectedFile ? selectedFile.name : translations[language].uploadPrompt}
-                      </span>
-                    </label>
-                    {selectedFile && (
-                      <div className="mt-4 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="ml-2 text-gray-700 dark:text-gray-300">{selectedFile.name}</span>
-                      </div>
-                    )}
+                  </svg>
+                </button>
+              </div>
+              
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div 
+          className={`transition-all duration-300 p-8 ${
+            isSidebarOpen ? 'ml-64' : 'ml-0'
+          }`}
+        >
+          <div className={`max-w-${isCsvLoaded ? '6xl' : '4xl'} mx-auto`}>
+            <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-8">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{translations[language].trainModel}</h1>
+
+              {showAssessment ? (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                    {translations[language].question} {currentQuestion + 1} {translations[language].of} {questions.length}
+                  </h2>
+                  <p className="text-gray-700 dark:text-white mb-4">
+                    {questions[currentQuestion].question}
+                  </p>
+                  <div className="space-y-3">
+                    {questions[currentQuestion].options.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleAnswerSelect(index)}
+                        className="w-full p-3 text-left rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-blue-50 dark:hover:bg-dark-200 dark:text-white transition-colors duration-200"
+                      >
+                        {option}
+                      </button>
+                    ))}
                   </div>
-                  {errorMessage && <div className="text-red-600">{errorMessage}</div>}
-                </form>
-                {isAnalyzed && renderCSVTable()}
-              </>
-            )}
+                </div>
+              ) : (
+                <>
+                  {renderSkillLevelGuidance()}
+                  <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+                    <div className="border-2 border-dashed border-gray-300 dark:border-dark-200 rounded-lg p-8 text-center">
+                      <input
+                        type="file"
+                        accept=".csv, .xlsx"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer flex flex-col items-center justify-center"
+                      >
+                        <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <span className="mt-2 text-gray-600 dark:text-gray-300">
+                          {selectedFile ? selectedFile.name : translations[language].uploadPrompt}
+                        </span>
+                      </label>
+                      {selectedFile && (
+                        <div className="mt-4 flex items-center justify-center">
+                          <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="ml-2 text-gray-700 dark:text-gray-300">{selectedFile.name}</span>
+                        </div>
+                      )}
+                    </div>
+                    {errorMessage && <div className="text-red-600">{errorMessage}</div>}
+                  </form>
+                  {isAnalyzed && renderCSVTable()}
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
