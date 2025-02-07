@@ -149,8 +149,8 @@ const TrainModel = ({ language }) => {
     if (uploadedFile) {
       setIsDataUploaded(true);
       
-      const user = auth.currentUser;
-      const storageRef = ref(storage, `uploads/${user.uid}/${uploadedFile.name}`);
+      // Dosya yolu basitleştirildi
+      const storageRef = ref(storage, `uploads/${uploadedFile.name}`);
 
       try {
         await uploadBytes(storageRef, uploadedFile);
@@ -164,28 +164,28 @@ const TrainModel = ({ language }) => {
             header: true,
             complete: (results) => {
               setCsvData(results.data);
-              setIsAnalyzed(true); // Automatically analyze after parsing
-              setIsCsvLoaded(true); // CSV yüklendiğinde durumu güncelle
+              setIsAnalyzed(true);
+              setIsCsvLoaded(true);
             }
           });
         };
         reader.readAsText(uploadedFile);
 
         // Sohbet geçmişine yeni bir kayıt ekle
-        if (user) {
-          await addDoc(collection(db, "chatHistory"), {
-            userId: user.uid,
-            fileName: uploadedFile.name,
-            timestamp: new Date()
-          });
-          // Sohbet geçmişini güncelle
-          const chatQuery = query(collection(db, "chatHistory"), where("userId", "==", user.uid));
-          const querySnapshot = await getDocs(chatQuery);
-          const chats = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          setChatHistory(chats);
-        }
+        await addDoc(collection(db, "chatHistory"), {
+          fileName: uploadedFile.name,
+          timestamp: new Date()
+        });
+        
+        // Sohbet geçmişini güncelle
+        const chatQuery = query(collection(db, "chatHistory"));
+        const querySnapshot = await getDocs(chatQuery);
+        const chats = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setChatHistory(chats);
+        
       } catch (error) {
         console.error("Error uploading file:", error);
+        setErrorMessage(translations[language].fetchError);
       }
     }
   };
@@ -280,13 +280,8 @@ const TrainModel = ({ language }) => {
 
   const handleChatSelect = async (chat) => {
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        setErrorMessage(translations[language].unauthorizedAccess || 'You must be logged in to access this file.');
-        return;
-      }
-
-      const fileRef = ref(storage, `uploads/${user.uid}/${chat.fileName}`);
+      // Basitleştirilmiş dosya yolu
+      const fileRef = ref(storage, `uploads/${chat.fileName}`);
       
       try {
         const url = await getDownloadURL(fileRef);
