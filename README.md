@@ -326,4 +326,40 @@ class StreamingAnalyzer:
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request 
+5. Open a Pull Request
+
+# Veri Eğitim Web
+
+## Genel Bakış
+Veri Eğitim Web, makine öğrenimi modellerinin eğitimi ve yönetimini kolaylaştırmak için tasarlanmış bir platformdur. Veri bilimciler ve geliştiriciler için veri kümeleri ve modelleriyle etkileşimde bulunabilecekleri kullanıcı dostu bir arayüz sunar.
+
+## Özellikler
+
+1. **Bilgi Sayfası**
+   - Platformda mevcut olan veri kümeleri ve modeller hakkında ayrıntılı bilgi sağlar.
+   - Kullanıcılar, verileriyle ilgili meta verileri ve istatistikleri görüntüleyebilir.
+
+2. **Model Eğitimi**
+   - Kullanıcıların makine öğrenimi modellerinin eğitimini başlatmasına olanak tanır.
+   - Kullanıcılar, eğitim oturumları için çeşitli parametreleri ve ayarları yapılandırabilir.
+   - Eğitim sürecinin gerçek zamanlı ilerlemesini ve sonuçlarını gösterir.
+
+3. **Kullanıcı Kimlik Doğrulama**
+   - Kullanıcı verilerini ve modellerini korumak için güvenli giriş ve kayıt sistemi.
+   - İzinleri ve erişim seviyelerini yönetmek için rol tabanlı erişim kontrolü.
+
+4. **Veri Yönetimi**
+   - Veri kümelerini verimli bir şekilde yükleme, düzenleme ve yönetme.
+   - Çeşitli veri formatlarını destekler ve veri ön işleme için araçlar sunar.
+
+5. **Model Değerlendirme**
+   - Farklı metrikler kullanarak model performansını değerlendirme araçları.
+   - Model davranışını ve sonuçlarını anlamaya yardımcı olacak görselleştirmeler.
+
+6. **API Entegrasyonu**
+   - Harici sistemlerle entegrasyon ve iş akışlarını otomatikleştirmek için API'ler sağlar.
+   - Sorunsuz veri alışverişi için RESTful hizmetleri destekler.
+
+## Başlarken
+
+Veri Eğitim Web ile başlamanız için bu belgede sağlanan kurulum talimatlarını ve kurulum kılavuzunu takip edin. 
