@@ -41,3 +41,10 @@ cors.json
 # /src/services/authService.js
 # .src
 postcss.config.js
+
+# Firebase
+serviceAccountKey.json
+/backend/services/__pycache__
+/backend/models/__pycache__
+/backend/config/__pycache__
+

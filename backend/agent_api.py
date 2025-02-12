@@ -13,6 +13,9 @@ from clustering_optimizer import ClusteringOptimizer
 import shutil
 import requests
 from io import StringIO
+import firebase_admin
+from firebase_admin import credentials, storage
+from urllib.parse import unquote
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -88,6 +91,12 @@ presenter = ResultPresenterAgent()
 
 # Analiz sonuçlarını geçici olarak saklamak için
 analysis_cache: Dict[str, Dict[str, Any]] = {}
+
+# Firebase yapılandırması
+cred = credentials.Certificate("path/to/serviceAccountKey.json")
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'tera11.firebasestorage.app'
+})
 
 # API başlangıcında
 for directory in ['output', 'uploads', 'logs']:
@@ -270,43 +279,32 @@ async def analyze_csv(request: CSVAnalysisRequest):
     try:
         logger.info(f"CSV analiz isteği: {request.file_name}")
 
-        # Firebase'den dosyayı indir
-        try:
-            response = requests.get(
-                request.file_url,
-                headers={
-                    'User-Agent': 'Mozilla/5.0',
-                    'Accept': '*/*'
-                },
-                timeout=30,
-                verify=False
-            )
-            
-            if not response.ok:
-                logger.error(f"Dosya indirme hatası: {response.status_code}")
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Dosya indirilemedi: {response.status_code}"
-                )
+        # Firebase URL'sini decode et
+        decoded_url = unquote(request.file_url)
+        logger.info(f"Decoded URL: {decoded_url}")
 
-            content = response.content.decode('utf-8-sig')
-            
-        except Exception as e:
-            logger.error(f"Dosya indirme hatası: {str(e)}")
-            raise HTTPException(
-                status_code=400,
-                detail=str(e)
-            )
-
-        # CSV'yi DataFrame'e dönüştür ve veri tiplerini otomatik belirle
         try:
+            # Firebase'den dosyayı indir
+            bucket = storage.bucket()
+            # URL'den blob path'i çıkar
+            blob_path = decoded_url.split('/o/')[1].split('?')[0]
+            blob = bucket.blob(blob_path)
+
+            # Geçici dosya oluştur
+            temp_file = Path("uploads") / request.file_name
+            blob.download_to_filename(str(temp_file))
+
+            # CSV'yi oku
             df = pd.read_csv(
-                StringIO(content),
-                dtype=None,  # Otomatik tip belirleme
-                na_values=['NA', 'missing', ''],  # Eksik değerleri tanımla
-                parse_dates=True,  # Tarih sütunlarını otomatik tanı
+                temp_file,
+                dtype=None,
+                na_values=['NA', 'missing', ''],
+                parse_dates=True
             )
-            
+
+            # Geçici dosyayı sil
+            temp_file.unlink()
+
             if df.empty:
                 raise ValueError("CSV dosyası boş")
 
@@ -386,7 +384,7 @@ async def analyze_csv(request: CSVAnalysisRequest):
             }
 
         except Exception as e:
-            logger.error(f"CSV analiz hatası: {str(e)}")
+            logger.error(f"Dosya işleme hatası: {str(e)}")
             raise HTTPException(
                 status_code=400,
                 detail=str(e)

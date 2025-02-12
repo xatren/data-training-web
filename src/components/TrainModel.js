@@ -280,14 +280,16 @@ const TrainModel = ({ language }) => {
             setAnalysisResults(data.data);
             setIsTrainingComplete(true);
 
+            // Görselleştirmeleri göster
             if (data.data.visualization_files?.length > 0) {
                 const visualizations = data.data.visualization_files.map(file => ({
-                    url: `http://localhost:8000/static/${file.split('/').pop()}`,
+                    url: `${API_BASE_URL}/static/${file.split('/').pop()}`,
                     title: file.split('/').pop().replace('.png', '')
                 }));
                 setVisualizations(visualizations);
             }
 
+            // Gemini analizini göster
             if (data.data.gemini_analysis) {
                 setGeminiAnalysis(data.data.gemini_analysis);
             }

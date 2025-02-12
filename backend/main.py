@@ -21,6 +21,7 @@ from typing import Dict, Any, Optional
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 
 # .env dosyasını yükle
 load_dotenv()
@@ -44,13 +45,17 @@ from src.client.exceptions import (
     APIConnectionError, AnalysisError
 )
 
+from services.csv_service import CSVService
+from services.analysis_service import AnalysisService
+from services.visualization_service import VisualizationService
+from models.request_models import CSVAnalysisRequest
+from config.settings import setup_directories, setup_logging
+
 # FastAPI uygulamasını oluştur
 app = FastAPI(
-    title="Veri Analiz API",
-    description="Verilerinin analizi için REST API",
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    title="Data Analysis API",
+    description="CSV Analiz ve Görselleştirme API'si",
+    version="1.0.0"
 )
 
 # API router'ı oluştur
@@ -78,6 +83,15 @@ templates = Jinja2Templates(directory=str(templates_dir))
 # Global değişkenler
 client: Optional[AgentClient] = None
 logger = setup_logger("main")
+
+# Başlangıçta temp klasörünü oluştur
+temp_dir = Path("temp")
+temp_dir.mkdir(exist_ok=True)
+
+# Servisler
+csv_service = CSVService()
+analysis_service = AnalysisService()
+visualization_service = VisualizationService()
 
 # Ana sayfa HTML şablonu
 INDEX_HTML = """
@@ -166,15 +180,10 @@ def initialize_client() -> None:
 
 @app.on_event("startup")
 async def startup_event():
-    """API sunucusu başlangıç olayı."""
-    try:
-        check_environment()
-        setup_directories()
-        initialize_client()
-        logger.info("API sunucusu başarıyla başlatıldı")
-    except Exception as e:
-        logger.error(f"Başlangıç hatası: {str(e)}")
-        sys.exit(1)
+    """Uygulama başlangıç ayarları"""
+    setup_logging()
+    setup_directories()
+    initialize_client()
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
@@ -332,6 +341,35 @@ def main() -> None:
 
 # Router'ı ekle
 app.include_router(router, prefix="/api")
+
+@app.post("/api/analyze/csv")
+async def analyze_csv(request: CSVAnalysisRequest):
+    """CSV dosyasını analiz et ve sonuçları döndür"""
+    try:
+        # CSV'yi Firebase'den indir ve DataFrame'e dönüştür
+        df = await csv_service.get_dataframe_from_url(
+            file_url=request.file_url,
+            file_name=request.file_name
+        )
+        
+        # Veriyi analiz et
+        analysis_results = await analysis_service.analyze_dataframe(df)
+        
+        # Görselleştirmeleri oluştur
+        visualizations = await visualization_service.create_visualizations(df)
+        
+        return {
+            "status": "success",
+            "message": "Analiz tamamlandı",
+            "data": {
+                "stats": analysis_results,
+                "visualization_files": visualizations
+            }
+        }
+        
+    except Exception as e:
+        logging.error(f"Analiz hatası: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 if __name__ == "__main__":
     main() 
