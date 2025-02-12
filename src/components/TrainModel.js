@@ -6,6 +6,7 @@ import { registerUser, loginUser } from '../services/authService';
 import { storage, db, auth } from '../services/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
+import { useCSVReader } from 'react-papaparse';
 
 const TrainModel = ({ language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -29,6 +30,12 @@ const TrainModel = ({ language }) => {
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [isCsvLoaded, setIsCsvLoaded] = useState(false);
+  const { CSVReader } = useCSVReader();
+  const [analysisResults, setAnalysisResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [visualizations, setVisualizations] = useState([]);
+  const [geminiAnalysis, setGeminiAnalysis] = useState(null);
 
   const { readString } = usePapaParse();
 
@@ -144,49 +151,77 @@ const TrainModel = ({ language }) => {
 
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
+    
+    // Dosya doğrulama
+    if (!uploadedFile.name.endsWith('.csv')) {
+        setErrorMessage('Sadece CSV dosyaları yükleyebilirsiniz');
+        return;
+    }
+    
+    if (uploadedFile.size > 5 * 1024 * 1024) {
+        setErrorMessage('Dosya boyutu 5MB üzerinde olamaz');
+        return;
+    }
+    
     setSelectedFile(uploadedFile);
     
     if (uploadedFile) {
-      setIsDataUploaded(true);
-      
-      // Dosya yolu basitleştirildi
-      const storageRef = ref(storage, `uploads/${uploadedFile.name}`);
-
-      try {
-        await uploadBytes(storageRef, uploadedFile);
-        console.log("File uploaded successfully!");
-
-        // Parse the CSV file immediately after upload
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const text = e.target.result;
-          readString(text, {
-            header: true,
-            complete: (results) => {
-              setCsvData(results.data);
-              setIsAnalyzed(true);
-              setIsCsvLoaded(true);
-            }
-          });
-        };
-        reader.readAsText(uploadedFile);
-
-        // Sohbet geçmişine yeni bir kayıt ekle
-        await addDoc(collection(db, "chatHistory"), {
-          fileName: uploadedFile.name,
-          timestamp: new Date()
-        });
+        setIsDataUploaded(true);
         
-        // Sohbet geçmişini güncelle
-        const chatQuery = query(collection(db, "chatHistory"));
-        const querySnapshot = await getDocs(chatQuery);
-        const chats = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setChatHistory(chats);
-        
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        setErrorMessage(translations[language].fetchError);
-      }
+        try {
+            // Firebase storage referansı oluştur
+            const storageRef = ref(storage, `uploads/${uploadedFile.name}`);
+
+            // Firebase'e dosyayı yükle
+            await uploadBytes(storageRef, uploadedFile);
+            console.log("File uploaded successfully!");
+
+            // Yüklenen dosyanın URL'sini al
+            const downloadURL = await getDownloadURL(storageRef);
+
+            // CSV'yi parse et
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const text = e.target.result;
+                readString(text, {
+                    header: true,
+                    complete: async (results) => {
+                        setCsvData(results.data);
+                        setIsAnalyzed(true);
+                        setIsCsvLoaded(true);
+
+                        // Sohbet geçmişine kaydet
+                        const user = auth.currentUser;
+                        if (user) {
+                            await addDoc(collection(db, "chatHistory"), {
+                                userId: user.uid,
+                                fileName: uploadedFile.name,
+                                fileUrl: downloadURL,
+                                timestamp: new Date()
+                            });
+
+                            // Sohbet geçmişini güncelle
+                            const chatQuery = query(
+                                collection(db, "chatHistory"), 
+                                where("userId", "==", user.uid)
+                            );
+                            const querySnapshot = await getDocs(chatQuery);
+                            const chats = querySnapshot.docs.map(doc => ({
+                                id: doc.id,
+                                ...doc.data()
+                            }));
+                            setChatHistory(chats);
+                        }
+                    }
+                });
+            };
+            reader.readAsText(uploadedFile);
+
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            setErrorMessage(translations[language].fetchError);
+            setIsDataUploaded(false);
+        }
     }
   };
 
@@ -201,35 +236,66 @@ const TrainModel = ({ language }) => {
 
   const handleTrainModel = async () => {
     if (!selectedFile) return;
-    setIsTraining(true);
-    setTrainingStep("Veri işleniyor...");
-    setProgress(10);
+    
+    try {
+        setIsTraining(true);
+        setTrainingStep("Veri işleniyor...");
+        setProgress(10);
 
-    // Örnek: Sunucuya dosya veya eğitim isteği gönderin
-    // fetch veya WebSocket aracılığıyla Python eğitim sürecini tetikleyebilirsiniz
+        // Firebase'den dosya URL'sini al
+        const storageRef = ref(storage, `uploads/${selectedFile.name}`);
+        const downloadURL = await getDownloadURL(storageRef);
 
-    // Eğitim süreci boyunca aşamaları simüle eden örnek kod (demo amaçlı):
-    setTimeout(() => {
-      setTrainingStep("Model eğitiliyor...");
-      setProgress(50);
-      setEstimatedTime("Yaklaşık 2 dakika");
-    }, 2000);
+        // Backend'e analiz isteği gönder
+        const response = await fetch('http://localhost:8000/analyze/csv', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                file_url: downloadURL,
+                file_name: selectedFile.name 
+            })
+        });
 
-    setTimeout(() => {
-      setTrainingStep("Eğitim tamamlanmak üzere...");
-      setProgress(90);
-      setEstimatedTime("30 saniye");
-    }, 4000);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.detail || 'Sunucu hatası');
+        }
 
-    setTimeout(() => {
-      setIsTrainingComplete(true);
-      setIsTraining(false);
-      setTrainingStep("Eğitim tamamlandı!");
-      setProgress(100);
-      setEstimatedTime("");
-      // Eğitim sonucu modelin indirme bağlantısı örnek olarak ayarlanıyor
-      setModelDownloadLink("/downloads/model_v1.h5");
-    }, 6000);
+        setTrainingStep("Analiz tamamlandı!");
+        setProgress(100);
+        
+        // Analiz sonuçlarını state'e kaydet
+        setAnalysisResults(data);
+        setIsTrainingComplete(true);
+
+        // Görselleştirmeleri göster
+        if (data.visualization_files && data.visualization_files.length > 0) {
+            const visualizations = data.visualization_files.map(file => ({
+                url: `http://localhost:8000/static/${file.split('/').pop()}`,
+                title: file.split('/').pop().replace('.png', '')
+            }));
+            setVisualizations(visualizations);
+        }
+
+        // Gemini analizini göster
+        if (data.gemini_analysis) {
+            setGeminiAnalysis(data.gemini_analysis);
+        }
+
+    } catch (error) {
+        console.error('Training error:', error);
+        setErrorMessage(
+            error.message === '[object Object]' 
+            ? 'Beklenmeyen bir hata oluştu' 
+            : error.message
+        );
+        setTrainingStep("Hata oluştu!");
+    } finally {
+        setIsTraining(false);
+    }
   };
 
   const handleDownloadModel = () => {
@@ -324,6 +390,30 @@ const TrainModel = ({ language }) => {
     } catch (error) {
       console.error('Error in handleChatSelect:', error);
       setErrorMessage(translations[language].fetchError);
+    }
+  };
+
+  const handleAnalyzeData = async (data) => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:8000/analyze/csv', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ data: data })
+      });
+
+      if (!response.ok) {
+        throw new Error('Analiz sırasında bir hata oluştu');
+      }
+
+      const results = await response.json();
+      setAnalysisResults(results);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -422,14 +512,15 @@ const TrainModel = ({ language }) => {
 
   const renderCSVTable = () => (
     <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-      <table {...getTableProps()} className="min-w-full bg-white dark:bg-dark-100">
+      <table className="min-w-full bg-white dark:bg-dark-100">
         <thead>
           {headerGroups.map(headerGroup => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
+            <tr key={headerGroup.id}>
               {headerGroup.headers.map(column => (
                 <th
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
+                  key={column.id}
                   className="px-4 py-2 border-b-2 border-gray-200 dark:border-dark-200 text-left"
+                  {...column.getHeaderProps(column.getSortByToggleProps())}
                 >
                   {column.render('Header')}
                   <span>
@@ -445,13 +536,16 @@ const TrainModel = ({ language }) => {
             </tr>
           ))}
         </thead>
-        <tbody {...getTableBodyProps()}>
-          {page.map(row => {
+        <tbody>
+          {page.map((row, rowIndex) => {
             prepareRow(row);
             return (
-              <tr {...row.getRowProps()} className="hover:bg-gray-100 dark:hover:bg-dark-200">
-                {row.cells.map(cell => (
-                  <td {...cell.getCellProps()} className="px-4 py-2 border-b border-gray-200 dark:border-dark-200">
+              <tr key={`row-${rowIndex}`} className="hover:bg-gray-100 dark:hover:bg-dark-200">
+                {row.cells.map((cell, cellIndex) => (
+                  <td 
+                    key={`cell-${rowIndex}-${cellIndex}`}
+                    className="px-4 py-2 border-b border-gray-200 dark:border-dark-200"
+                  >
                     {cell.render('Cell')}
                   </td>
                 ))}
@@ -460,46 +554,53 @@ const TrainModel = ({ language }) => {
           })}
         </tbody>
       </table>
-      <div className="pagination">
-        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-          {'<<'}
-        </button>{' '}
-        <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-          {'<'}
-        </button>{' '}
-        <button onClick={() => nextPage()} disabled={!canNextPage}>
-          {'>'}
-        </button>{' '}
-        <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-          {'>>'}
-        </button>{' '}
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex gap-2">
+          <button
+            onClick={() => gotoPage(0)}
+            disabled={!canPreviousPage}
+            className="px-3 py-1 rounded border"
+          >
+            {'<<'}
+          </button>
+          <button
+            onClick={() => previousPage()}
+            disabled={!canPreviousPage}
+            className="px-3 py-1 rounded border"
+          >
+            {'<'}
+          </button>
+          <button
+            onClick={() => nextPage()}
+            disabled={!canNextPage}
+            className="px-3 py-1 rounded border"
+          >
+            {'>'}
+          </button>
+          <button
+            onClick={() => gotoPage(pageCount - 1)}
+            disabled={!canNextPage}
+            className="px-3 py-1 rounded border"
+          >
+            {'>>'}
+          </button>
+        </div>
         <span>
-          Page{' '}
+          Sayfa{' '}
           <strong>
-            {pageIndex + 1} of {pageOptions.length}
-          </strong>{' '}
+            {pageIndex + 1} / {pageOptions.length}
+          </strong>
         </span>
-        <span>
-          | Go to page:{' '}
-          <input
-            type="number"
-            defaultValue={pageIndex + 1}
-            onChange={e => {
-              const page = e.target.value ? Number(e.target.value) - 1 : 0;
-              gotoPage(page);
-            }}
-            style={{ width: '100px' }}
-          />
-        </span>{' '}
         <select
-          value={currentPageSize}
+          value={pageSize}
           onChange={e => {
-            setTablePageSize(Number(e.target.value));
+            setPageSize(Number(e.target.value));
           }}
+          className="px-2 py-1 rounded border"
         >
-          {[10, 20, 30, 40, 50].map(pageSize => (
-            <option key={pageSize} value={pageSize}>
-              Show {pageSize}
+          {[10, 20, 30, 40, 50].map(size => (
+            <option key={size} value={size}>
+              {size} satır göster
             </option>
           ))}
         </select>
@@ -613,6 +714,35 @@ const TrainModel = ({ language }) => {
             >
               {translations[language].downloadModel}
             </button>
+          </div>
+        )}
+        {isTrainingComplete && (
+          <div className="mt-8 space-y-6">
+            {/* Gemini Analizi */}
+            {geminiAnalysis && (
+              <div className="bg-white dark:bg-dark-100 rounded-lg p-6 shadow">
+                <h3 className="text-lg font-semibold mb-4">Analiz Sonuçları</h3>
+                <div className="prose dark:prose-invert">
+                  {geminiAnalysis}
+                </div>
+              </div>
+            )}
+
+            {/* Görselleştirmeler */}
+            {visualizations.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {visualizations.map((viz, index) => (
+                  <div key={index} className="bg-white dark:bg-dark-100 rounded-lg p-4 shadow">
+                    <h4 className="text-md font-medium mb-2">{viz.title}</h4>
+                    <img 
+                      src={viz.url} 
+                      alt={viz.title}
+                      className="w-full h-auto rounded"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

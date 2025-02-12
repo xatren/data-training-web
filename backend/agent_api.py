@@ -1,10 +1,18 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 import numpy as np
 from agents import DataCollectorAgent, DataProcessorAgent, ResultPresenterAgent
 import logging
 from pathlib import Path
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from data_preparation import DataPreparation
+from clustering_optimizer import ClusteringOptimizer
+import shutil
+import requests
+from io import StringIO
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,6 +36,10 @@ class DataInput(BaseModel):
 class UserQuery(BaseModel):
     query: str
     analysis_id: Optional[str] = None
+
+class CSVAnalysisRequest(BaseModel):
+    file_url: str = Field(..., min_length=10)
+    file_name: str = Field(..., min_length=1)
 
 # Global ajan nesneleri
 collector = DataCollectorAgent()
@@ -188,4 +200,125 @@ async def get_analysis(analysis_id: str):
         raise HTTPException(
             status_code=500,
             detail=f"Analiz sonuçları getirilirken hata oluştu: {str(e)}"
+        )
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        # Uploads klasörünü oluştur
+        upload_dir = Path("uploads")
+        upload_dir.mkdir(exist_ok=True)
+        
+        # Dosyayı kaydet
+        file_path = upload_dir / file.filename
+        with file_path.open("wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        return {"filename": file.filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze/csv")
+async def analyze_csv(request: CSVAnalysisRequest):
+    try:
+        # URL doğrulama
+        if not request.file_url.startswith('https://'):
+            raise HTTPException(
+                status_code=422,
+                detail="Geçersiz dosya URL formatı"
+            )
+        
+        # Dosya indirme
+        response = requests.get(request.file_url)
+        if not response.ok:
+            raise HTTPException(
+                status_code=400,
+                detail="Dosya indirme başarısız"
+            )
+        
+        # CSV'yi pandas DataFrame'e dönüştür
+        try:
+            csv_content = StringIO(response.text)
+            df = pd.read_csv(csv_content)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV dosyası okunamadı: {str(e)}"
+            )
+
+        # Veri hazırlama
+        try:
+            prep = DataPreparation()
+            df_cleaned = prep.handle_missing_values(df, {col: 'mean' for col in df.columns})
+            
+            # Kümeleme analizi
+            optimizer = ClusteringOptimizer()
+            X = df_cleaned.select_dtypes(include=[np.number]).values
+            optimizer.fit(X)
+            
+            # Görselleştirmeler
+            output_dir = Path("output")
+            output_dir.mkdir(exist_ok=True)
+            
+            # Departman dağılımı
+            if 'Departman' in df.columns:
+                plt.figure(figsize=(10, 6))
+                df['Departman'].value_counts().plot(kind='bar')
+                plt.title('Departman Dağılımı')
+                plt.tight_layout()
+                plt.savefig(output_dir / 'departman_dagilimi.png')
+                plt.close()
+            
+            # Maaş dağılımı
+            if 'Maas' in df.columns:
+                plt.figure(figsize=(10, 6))
+                sns.histplot(data=df, x='Maas')
+                plt.title('Maaş Dağılımı')
+                plt.tight_layout()
+                plt.savefig(output_dir / 'maas_dagilimi.png')
+                plt.close()
+            
+            # Kümeleme görselleştirmesi
+            labels = optimizer.predict(X)
+            optimizer.plot_clusters_2d(X, labels, save_path=output_dir)
+            
+            # Gemini analizi
+            analysis_results = {
+                "cluster_info": {
+                    "n_clusters": len(np.unique(labels)),
+                    "silhouette_score": optimizer.best_score
+                }
+            }
+            gemini_results = await presenter.explain_results(analysis_results)
+            
+            return {
+                "status": "success",
+                "basic_stats": {
+                    "toplam_calisan": len(df),
+                    "departman_dagilimi": df['Departman'].value_counts().to_dict() if 'Departman' in df.columns else {},
+                    "ortalama_maas": float(df['Maas'].mean()) if 'Maas' in df.columns else None
+                },
+                "clustering_analysis": {
+                    "n_clusters": len(np.unique(labels)),
+                    "silhouette_score": float(optimizer.best_score)
+                },
+                "gemini_analysis": gemini_results["textual_explanation"],
+                "visualization_files": [
+                    str(f) for f in output_dir.glob("*.png")
+                ]
+            }
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Analiz sırasında hata: {str(e)}"
+            )
+            
+    except HTTPException as he:
+        raise
+    except Exception as e:
+        logger.error(f"Beklenmeyen hata: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Sunucu hatası: {str(e)}"
         ) 

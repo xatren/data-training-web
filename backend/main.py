@@ -20,6 +20,7 @@ import sys
 from typing import Dict, Any, Optional
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 # .env dosyasını yükle
 load_dotenv()
@@ -52,6 +53,15 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# CORS ayarlarını ekle
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Statik dosyalar ve şablonlar için dizinleri ayarla
 static_dir = PROJECT_ROOT / "static"
 templates_dir = PROJECT_ROOT / "templates"
@@ -59,7 +69,7 @@ static_dir.mkdir(exist_ok=True)
 templates_dir.mkdir(exist_ok=True)
 
 # Statik dosyaları ve şablonları yapılandır
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+app.mount("/static", StaticFiles(directory="output"), name="static")
 templates = Jinja2Templates(directory=str(templates_dir))
 
 # Global değişkenler
@@ -124,12 +134,8 @@ INDEX_HTML = """
 
 def check_environment() -> None:
     """Çevresel değişkenleri kontrol eder."""
-    required_vars = ["GEMINI_API_KEY"]
-    missing_vars = [var for var in required_vars if not os.getenv(var)]
-    
-    if missing_vars:
-        logger.error(f"Eksik çevresel değişkenler: {', '.join(missing_vars)}")
-        logger.info("Lütfen .env dosyasını oluşturun ve gerekli değişkenleri tanımlayın")
+    if not os.getenv("GEMINI_API_KEY"):
+        logger.error("GEMINI_API_KEY çevresel değişkeni tanımlanmamış!")
         sys.exit(1)
 
 def setup_directories() -> None:
