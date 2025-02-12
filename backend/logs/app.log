@@ -54,3 +54,61 @@
 2025-02-12 15:25:54 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
 2025-02-12 15:25:54 - main - INFO - AgentClient başarıyla başlatıldı
 2025-02-12 15:25:54 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 15:50:48 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 15:50:48 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 15:50:48 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 15:50:48 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 15:52:51 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 15:52:51 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 15:52:51 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 15:52:51 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 15:53:09 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 15:53:09 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 15:53:09 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 15:53:09 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 15:57:34 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 15:57:34 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 15:57:34 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 15:57:34 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:15:09 - main - INFO - Directory created/checked: output
+2025-02-12 16:15:09 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:15:09 - main - INFO - Directory created/checked: logs
+2025-02-12 16:15:09 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:15:09 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:15:09 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:15:09 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:20:01 - main - INFO - Directory created/checked: output
+2025-02-12 16:20:01 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:20:01 - main - INFO - Directory created/checked: logs
+2025-02-12 16:20:01 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:20:01 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:20:01 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:20:01 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:29:11 - main - INFO - Directory created/checked: output
+2025-02-12 16:29:11 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:29:11 - main - INFO - Directory created/checked: logs
+2025-02-12 16:29:11 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:29:11 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:29:11 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:29:11 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:31:28 - main - INFO - Directory created/checked: output
+2025-02-12 16:31:28 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:31:28 - main - INFO - Directory created/checked: logs
+2025-02-12 16:31:28 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:31:28 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:31:28 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:31:28 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:33:38 - main - INFO - Directory created/checked: output
+2025-02-12 16:33:38 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:33:38 - main - INFO - Directory created/checked: logs
+2025-02-12 16:33:38 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:33:38 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:33:38 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:33:38 - main - INFO - API sunucusu başarıyla başlatıldı
+2025-02-12 16:39:48 - main - INFO - Directory created/checked: output
+2025-02-12 16:39:48 - main - INFO - Directory created/checked: uploads
+2025-02-12 16:39:48 - main - INFO - Directory created/checked: logs
+2025-02-12 16:39:48 - main - INFO - Dizinler hazır: C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\output, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\logs, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\static, C:\Users\Asus\Desktop\DataTrainingWeb\data-training-web\backend\templates
+2025-02-12 16:39:48 - src.utils.logger - INFO - Gemini model başarıyla yapılandırıldı: gemini-pro
+2025-02-12 16:39:48 - main - INFO - AgentClient başarıyla başlatıldı
+2025-02-12 16:39:48 - main - INFO - API sunucusu başarıyla başlatıldı

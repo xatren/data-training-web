@@ -27,16 +27,17 @@ yarn-error.log*
 .firebase/
 /src/services/firebaseConfig.js
 /src/services/authService.js
-/backend/__pycache__
-/backend/src/__pycache__
-data-training-web\backend\src\__pycache__
+
+# Python cache
+/backend/__pycache__/
+/backend/src/__pycache__/
+
 # CORS
 cors.json
-/backend/__pycache__
-.backend/__pycache__
-data-training-web\backend\__pycache__
 
-/src/services/authService.js
-
-.src
+# Gereksiz tekrarlar ve yanlış path'ler kaldırıldı
+# data-training-web\backend\src\__pycache__
+# data-training-web\backend\__pycache__
+# /src/services/authService.js
+# .src
 postcss.config.js

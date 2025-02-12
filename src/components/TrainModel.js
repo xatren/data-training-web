@@ -8,6 +8,8 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc, getDoc, collection, addDoc, deleteDoc, query, where, getDocs } from "firebase/firestore";
 import { useCSVReader } from 'react-papaparse';
 
+const API_BASE_URL = 'http://localhost:8000/api';
+
 const TrainModel = ({ language }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -244,17 +246,24 @@ const TrainModel = ({ language }) => {
 
         // Firebase'den dosya URL'sini al
         const storageRef = ref(storage, `uploads/${selectedFile.name}`);
-        const downloadURL = await getDownloadURL(storageRef);
+        let downloadURL;
+        
+        try {
+            downloadURL = await getDownloadURL(storageRef);
+            console.log("Firebase URL:", downloadURL);
+        } catch (error) {
+            throw new Error("Dosya URL'si alınamadı");
+        }
 
         // Backend'e analiz isteği gönder
-        const response = await fetch('http://localhost:8000/analyze/csv', {
+        const response = await fetch(`${API_BASE_URL}/analyze/csv`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 file_url: downloadURL,
-                file_name: selectedFile.name 
+                file_name: selectedFile.name
             })
         });
 
@@ -267,31 +276,28 @@ const TrainModel = ({ language }) => {
         setTrainingStep("Analiz tamamlandı!");
         setProgress(100);
         
-        // Analiz sonuçlarını state'e kaydet
-        setAnalysisResults(data);
-        setIsTrainingComplete(true);
+        if (data.status === 'success') {
+            setAnalysisResults(data.data);
+            setIsTrainingComplete(true);
 
-        // Görselleştirmeleri göster
-        if (data.visualization_files && data.visualization_files.length > 0) {
-            const visualizations = data.visualization_files.map(file => ({
-                url: `http://localhost:8000/static/${file.split('/').pop()}`,
-                title: file.split('/').pop().replace('.png', '')
-            }));
-            setVisualizations(visualizations);
-        }
+            if (data.data.visualization_files?.length > 0) {
+                const visualizations = data.data.visualization_files.map(file => ({
+                    url: `http://localhost:8000/static/${file.split('/').pop()}`,
+                    title: file.split('/').pop().replace('.png', '')
+                }));
+                setVisualizations(visualizations);
+            }
 
-        // Gemini analizini göster
-        if (data.gemini_analysis) {
-            setGeminiAnalysis(data.gemini_analysis);
+            if (data.data.gemini_analysis) {
+                setGeminiAnalysis(data.data.gemini_analysis);
+            }
+        } else {
+            throw new Error(data.message || 'Analiz başarısız');
         }
 
     } catch (error) {
         console.error('Training error:', error);
-        setErrorMessage(
-            error.message === '[object Object]' 
-            ? 'Beklenmeyen bir hata oluştu' 
-            : error.message
-        );
+        setErrorMessage(error.message);
         setTrainingStep("Hata oluştu!");
     } finally {
         setIsTraining(false);
@@ -510,17 +516,19 @@ const TrainModel = ({ language }) => {
     usePagination
   );
 
-  const renderCSVTable = () => (
-    <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-      <table className="min-w-full bg-white dark:bg-dark-100">
-        <thead>
-          {headerGroups.map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(column => (
+  const renderTableHeader = () => (
+    <thead>
+      {headerGroups.map(headerGroup => {
+        const { key, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
+        return (
+          <tr key={key} {...headerGroupProps}>
+            {headerGroup.headers.map(column => {
+              const { key, ...columnProps } = column.getHeaderProps(column.getSortByToggleProps());
+              return (
                 <th
-                  key={column.id}
+                  key={key}
+                  {...columnProps}
                   className="px-4 py-2 border-b-2 border-gray-200 dark:border-dark-200 text-left"
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
                 >
                   {column.render('Header')}
                   <span>
@@ -532,27 +540,42 @@ const TrainModel = ({ language }) => {
                   </span>
                   <div>{column.canFilter ? column.render('Filter') : null}</div>
                 </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {page.map((row, rowIndex) => {
-            prepareRow(row);
-            return (
-              <tr key={`row-${rowIndex}`} className="hover:bg-gray-100 dark:hover:bg-dark-200">
-                {row.cells.map((cell, cellIndex) => (
-                  <td 
-                    key={`cell-${rowIndex}-${cellIndex}`}
-                    className="px-4 py-2 border-b border-gray-200 dark:border-dark-200"
-                  >
-                    {cell.render('Cell')}
-                  </td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
+              );
+            })}
+          </tr>
+        );
+      })}
+    </thead>
+  );
+
+  const renderTableBody = () => (
+    <tbody>
+      {page.map((row, rowIndex) => {
+        prepareRow(row);
+        return (
+          <tr 
+            key={`row-${rowIndex}-${row.id || ''}`}
+            className="hover:bg-gray-100 dark:hover:bg-dark-200"
+          >
+            {row.cells.map((cell, cellIndex) => (
+              <td 
+                key={`cell-${rowIndex}-${cellIndex}-${cell.column.id}`}
+                className="px-4 py-2 border-b border-gray-200 dark:border-dark-200"
+              >
+                {cell.render('Cell')}
+              </td>
+            ))}
+          </tr>
+        );
+      })}
+    </tbody>
+  );
+
+  const renderCSVTable = () => (
+    <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+      <table className="min-w-full bg-white dark:bg-dark-100">
+        {renderTableHeader()}
+        {renderTableBody()}
       </table>
       <div className="mt-4 flex items-center justify-between">
         <div className="flex gap-2">
@@ -605,6 +628,13 @@ const TrainModel = ({ language }) => {
           ))}
         </select>
       </div>
+    </div>
+  );
+
+  const ErrorMessage = ({ message }) => (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
+        <strong className="font-bold">Hata! </strong>
+        <span className="block sm:inline">{message}</span>
     </div>
   );
 
@@ -666,7 +696,7 @@ const TrainModel = ({ language }) => {
                 </div>
               )}
             </div>
-            {errorMessage && <div className="text-red-600">{errorMessage}</div>}
+            {errorMessage && <ErrorMessage message={errorMessage} />}
           </form>
         </>
       );

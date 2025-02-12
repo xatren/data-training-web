@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, UploadFile, File, APIRouter
+from pydantic import BaseModel, Field, HttpUrl, AnyUrl
 from typing import List, Dict, Optional, Any
 import numpy as np
 from agents import DataCollectorAgent, DataProcessorAgent, ResultPresenterAgent
@@ -28,6 +28,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Router oluştur
+router = APIRouter()
+
 # Pydantic modelleri
 class DataInput(BaseModel):
     data: List[List[float]]
@@ -38,8 +41,45 @@ class UserQuery(BaseModel):
     analysis_id: Optional[str] = None
 
 class CSVAnalysisRequest(BaseModel):
-    file_url: str = Field(..., min_length=10)
-    file_name: str = Field(..., min_length=1)
+    file_url: str
+    file_name: str
+
+    class Config:
+        # Tüm string değerleri kabul et
+        json_schema_extra = {
+            "example": {
+                "file_url": "https://firebasestorage.googleapis.com/...",
+                "file_name": "example.csv"
+            }
+        }
+
+class DynamicData(BaseModel):
+    """Dinamik veri modeli - herhangi bir alanı kabul eder"""
+    __root__: Dict[str, Any]
+
+    class Config:
+        extra = "allow"  # Tüm ekstra alanları kabul et
+
+class AnalysisRequest(BaseModel):
+    """Dinamik veri analizi isteği için model."""
+    data: List[Dict[str, Any]]  # Herhangi bir yapıdaki veriyi kabul et
+    method: str = "standard"
+    parameters: Optional[Dict[str, Any]] = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "data": [
+                    {
+                        "column1": "value1",
+                        "column2": 123,
+                        # Diğer sütunlar dinamik olarak eklenebilir
+                    }
+                ],
+                "method": "standard",
+                "parameters": {}
+            }
+        }
 
 # Global ajan nesneleri
 collector = DataCollectorAgent()
@@ -48,6 +88,12 @@ presenter = ResultPresenterAgent()
 
 # Analiz sonuçlarını geçici olarak saklamak için
 analysis_cache: Dict[str, Dict[str, Any]] = {}
+
+# API başlangıcında
+for directory in ['output', 'uploads', 'logs']:
+    path = Path(directory)
+    path.mkdir(exist_ok=True)
+    logger.info(f"Directory created/checked: {path}")
 
 @app.post("/analyze")
 async def analyze_data(input_data: DataInput):
@@ -218,107 +264,171 @@ async def upload_file(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze/csv")
+@router.post("/analyze/csv")
 async def analyze_csv(request: CSVAnalysisRequest):
+    """CSV dosyasını analiz eder ve sonuçları döndürür."""
     try:
-        # URL doğrulama
-        if not request.file_url.startswith('https://'):
-            raise HTTPException(
-                status_code=422,
-                detail="Geçersiz dosya URL formatı"
+        logger.info(f"CSV analiz isteği: {request.file_name}")
+
+        # Firebase'den dosyayı indir
+        try:
+            response = requests.get(
+                request.file_url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0',
+                    'Accept': '*/*'
+                },
+                timeout=30,
+                verify=False
             )
-        
-        # Dosya indirme
-        response = requests.get(request.file_url)
-        if not response.ok:
+            
+            if not response.ok:
+                logger.error(f"Dosya indirme hatası: {response.status_code}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Dosya indirilemedi: {response.status_code}"
+                )
+
+            content = response.content.decode('utf-8-sig')
+            
+        except Exception as e:
+            logger.error(f"Dosya indirme hatası: {str(e)}")
             raise HTTPException(
                 status_code=400,
-                detail="Dosya indirme başarısız"
-            )
-        
-        # CSV'yi pandas DataFrame'e dönüştür
-        try:
-            csv_content = StringIO(response.text)
-            df = pd.read_csv(csv_content)
-        except Exception as e:
-            raise HTTPException(
-                status_code=400, 
-                detail=f"CSV dosyası okunamadı: {str(e)}"
+                detail=str(e)
             )
 
-        # Veri hazırlama
+        # CSV'yi DataFrame'e dönüştür ve veri tiplerini otomatik belirle
         try:
-            prep = DataPreparation()
-            df_cleaned = prep.handle_missing_values(df, {col: 'mean' for col in df.columns})
-            
-            # Kümeleme analizi
-            optimizer = ClusteringOptimizer()
-            X = df_cleaned.select_dtypes(include=[np.number]).values
-            optimizer.fit(X)
-            
-            # Görselleştirmeler
-            output_dir = Path("output")
-            output_dir.mkdir(exist_ok=True)
-            
-            # Departman dağılımı
-            if 'Departman' in df.columns:
-                plt.figure(figsize=(10, 6))
-                df['Departman'].value_counts().plot(kind='bar')
-                plt.title('Departman Dağılımı')
-                plt.tight_layout()
-                plt.savefig(output_dir / 'departman_dagilimi.png')
-                plt.close()
-            
-            # Maaş dağılımı
-            if 'Maas' in df.columns:
-                plt.figure(figsize=(10, 6))
-                sns.histplot(data=df, x='Maas')
-                plt.title('Maaş Dağılımı')
-                plt.tight_layout()
-                plt.savefig(output_dir / 'maas_dagilimi.png')
-                plt.close()
-            
-            # Kümeleme görselleştirmesi
-            labels = optimizer.predict(X)
-            optimizer.plot_clusters_2d(X, labels, save_path=output_dir)
-            
-            # Gemini analizi
-            analysis_results = {
-                "cluster_info": {
-                    "n_clusters": len(np.unique(labels)),
-                    "silhouette_score": optimizer.best_score
-                }
-            }
-            gemini_results = await presenter.explain_results(analysis_results)
-            
-            return {
-                "status": "success",
-                "basic_stats": {
-                    "toplam_calisan": len(df),
-                    "departman_dagilimi": df['Departman'].value_counts().to_dict() if 'Departman' in df.columns else {},
-                    "ortalama_maas": float(df['Maas'].mean()) if 'Maas' in df.columns else None
-                },
-                "clustering_analysis": {
-                    "n_clusters": len(np.unique(labels)),
-                    "silhouette_score": float(optimizer.best_score)
-                },
-                "gemini_analysis": gemini_results["textual_explanation"],
-                "visualization_files": [
-                    str(f) for f in output_dir.glob("*.png")
-                ]
-            }
-            
-        except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Analiz sırasında hata: {str(e)}"
+            df = pd.read_csv(
+                StringIO(content),
+                dtype=None,  # Otomatik tip belirleme
+                na_values=['NA', 'missing', ''],  # Eksik değerleri tanımla
+                parse_dates=True,  # Tarih sütunlarını otomatik tanı
             )
             
-    except HTTPException as he:
+            if df.empty:
+                raise ValueError("CSV dosyası boş")
+
+            # Veri tiplerini belirle
+            dtypes = df.dtypes.to_dict()
+            column_types = {
+                col: str(dtype) for col, dtype in dtypes.items()
+            }
+
+            logger.info(f"Sütun tipleri: {column_types}")
+            logger.info(f"DataFrame boyutu: {df.shape}")
+
+            # Temel istatistikler
+            stats = {
+                "satir_sayisi": len(df),
+                "sutun_sayisi": len(df.columns),
+                "sutunlar": df.columns.tolist(),
+                "veri_tipleri": column_types,
+                "sayisal_sutunlar": df.select_dtypes(include=['int64', 'float64']).columns.tolist(),
+                "kategorik_sutunlar": df.select_dtypes(include=['object', 'category']).columns.tolist(),
+                "tarih_sutunlari": df.select_dtypes(include=['datetime64']).columns.tolist()
+            }
+
+            # Görselleştirmeler
+            visualizations = []
+
+            # Her sütun tipi için uygun görselleştirme
+            for col in df.columns:
+                if df[col].dtype in ['int64', 'float64']:
+                    # Sayısal sütunlar için histogram
+                    plt.figure(figsize=(10, 6))
+                    sns.histplot(data=df, x=col)
+                    plt.title(f'{col} Dağılımı')
+                    plt.tight_layout()
+                    file_name = f'{col.lower()}_dagilimi.png'
+                    plt.savefig(output_dir / file_name)
+                    plt.close()
+                    visualizations.append(file_name)
+                elif df[col].dtype in ['object', 'category']:
+                    # Kategorik sütunlar için bar plot (eğer çok fazla unique değer yoksa)
+                    if df[col].nunique() <= 20:
+                        plt.figure(figsize=(10, 6))
+                        df[col].value_counts().plot(kind='bar')
+                        plt.title(f'{col} Dağılımı')
+                        plt.xticks(rotation=45)
+                        plt.tight_layout()
+                        file_name = f'{col.lower()}_dagilimi.png'
+                        plt.savefig(output_dir / file_name)
+                        plt.close()
+                        visualizations.append(file_name)
+
+            # Korelasyon matrisi (sayısal sütunlar için)
+            numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
+            if len(numeric_cols) > 1:
+                plt.figure(figsize=(12, 8))
+                sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
+                plt.title('Korelasyon Matrisi')
+                plt.tight_layout()
+                plt.savefig(output_dir / 'korelasyon_matrisi.png')
+                plt.close()
+                visualizations.append('korelasyon_matrisi.png')
+
+            # Analiz metni oluştur
+            analysis_text = self.create_analysis_text(df, stats)
+
+            # Gemini analizi
+            gemini_results = await presenter.explain_results({"analysis": analysis_text})
+
+            return {
+                "status": "success",
+                "message": "Analiz tamamlandı",
+                "data": {
+                    "stats": stats,
+                    "visualization_files": visualizations,
+                    "gemini_analysis": gemini_results["textual_explanation"]
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"CSV analiz hatası: {str(e)}")
+            raise HTTPException(
+                status_code=400,
+                detail=str(e)
+            )
+
+    except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Beklenmeyen hata: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Sunucu hatası: {str(e)}"
-        ) 
+            detail=str(e)
+        )
+
+    def create_analysis_text(self, df: pd.DataFrame, stats: Dict) -> str:
+        """Analiz metni oluşturur."""
+        text = f"""
+        Veri seti analizi:
+        - Toplam {stats['satir_sayisi']} satır ve {stats['sutun_sayisi']} sütun
+        - Sütunlar ve tipleri:
+        """
+        
+        for col, dtype in stats['veri_tipleri'].items():
+            text += f"\n  - {col}: {dtype}"
+        
+        text += "\n\nİstatistikler:"
+        
+        # Sayısal sütunlar için istatistikler
+        for col in stats['sayisal_sutunlar']:
+            text += f"\n\n{col}:"
+            text += f"\n  - Ortalama: {df[col].mean():.2f}"
+            text += f"\n  - Medyan: {df[col].median():.2f}"
+            text += f"\n  - Std: {df[col].std():.2f}"
+            text += f"\n  - Min: {df[col].min():.2f}"
+            text += f"\n  - Max: {df[col].max():.2f}"
+
+        # Kategorik sütunlar için dağılımlar
+        for col in stats['kategorik_sutunlar']:
+            if df[col].nunique() <= 10:
+                text += f"\n\n{col} dağılımı:"
+                value_counts = df[col].value_counts()
+                for val, count in value_counts.items():
+                    text += f"\n  - {val}: {count} ({(count/len(df)*100):.1f}%)"
+
+        return text 

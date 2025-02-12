@@ -11,7 +11,7 @@ Kullanım:
 import argparse
 import asyncio
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -52,6 +52,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# API router'ı oluştur
+router = APIRouter()
 
 # CORS ayarlarını ekle
 app.add_middleware(
@@ -111,11 +114,6 @@ INDEX_HTML = """
         </div>
         
         <div class="endpoint">
-            <span class="method">POST</span> /analyze/csv
-            <p>CSV dosyası analizi gerçekleştirir.</p>
-        </div>
-        
-        <div class="endpoint">
             <span class="method">GET</span> /analysis/{analysis_id}
             <p>Analiz sonuçlarını sorgular.</p>
         </div>
@@ -141,8 +139,10 @@ def check_environment() -> None:
 def setup_directories() -> None:
     """Gerekli dizinleri oluşturur ve kontrol eder."""
     try:
-        for directory in [OUTPUT_DIR, LOG_DIR, static_dir, templates_dir]:
-            directory.mkdir(parents=True, exist_ok=True)
+        for directory in ['output', 'uploads', 'logs']:
+            path = Path(directory)
+            path.mkdir(exist_ok=True)
+            logger.info(f"Directory created/checked: {path}")
             
         # Ana sayfa şablonunu oluştur
         index_path = templates_dir / "index.html"
@@ -212,26 +212,6 @@ async def analyze_data(request: AnalysisRequest) -> AnalysisResponse:
         logger.error(f"Analiz hatası: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze/csv", response_model=AnalysisResponse)
-async def analyze_csv(file_path: str) -> AnalysisResponse:
-    """CSV dosyası analizi endpoint'i."""
-    try:
-        if not client:
-            raise APIConnectionError("AgentClient başlatılmamış")
-            
-        # Dosya yolunu doğrula
-        csv_path = Path(file_path)
-        if not csv_path.exists():
-            raise FileNotFoundError(f"CSV dosyası bulunamadı: {file_path}")
-            
-        result = await client.analyze_csv(str(csv_path))
-        logger.info(f"CSV analizi tamamlandı: {result['analysis_id']}")
-        return AnalysisResponse(**result)
-        
-    except Exception as e:
-        logger.error(f"CSV analiz hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.get("/analysis/{analysis_id}")
 async def get_analysis(analysis_id: str) -> AnalysisResponse:
     """Analiz sonuçları sorgulama endpoint'i."""
@@ -258,6 +238,24 @@ async def not_found_handler(request: Request, exc: HTTPException):
             "docs": "/docs veya /redoc adreslerini ziyaret edin"
         }
     )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)}
+    )
+
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)}
+        )
 
 def parse_args() -> argparse.Namespace:
     """Komut satırı argümanlarını ayrıştırır."""
@@ -331,6 +329,9 @@ def main() -> None:
     except Exception as e:
         logger.error(f"Program hatası: {str(e)}")
         sys.exit(1)
+
+# Router'ı ekle
+app.include_router(router, prefix="/api")
 
 if __name__ == "__main__":
     main() 
